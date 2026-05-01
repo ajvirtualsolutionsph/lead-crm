@@ -8,7 +8,7 @@ const auth = new google.auth.JWT({
 
 const sheets = google.sheets({ version: 'v4', auth });
 const SHEET_ID = process.env.GOOGLE_SHEET_ID;
-const RANGE = 'A:V';
+const RANGE = 'A:W';
 
 function normalizePhone(raw) {
   if (!raw) return '';
@@ -28,8 +28,8 @@ export async function getLeads() {
     phone: normalizePhone(row[4]),
     website: row[5] || '',
     notes: row[9] || '',
-    status: row[20] || 'New',
-    lastCalled: row[21] || '',
+    status: row[21] || 'New',
+    lastCalled: row[22] || '',
   }));
 }
 
@@ -42,8 +42,8 @@ export async function updateLead(rowIndex, status, notes) {
       valueInputOption: 'USER_ENTERED',
       data: [
         { range: `J${rowIndex}`, values: [[notes]] },
-        { range: `U${rowIndex}`, values: [[status]] },
-        { range: `V${rowIndex}`, values: [[now]] },
+        { range: `V${rowIndex}`, values: [[status]] },
+        { range: `W${rowIndex}`, values: [[now]] },
       ],
     },
   });
