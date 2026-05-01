@@ -59,10 +59,21 @@ cd dialer/backend && node index.js
 cd dialer/frontend && npm run dev
 ```
 
-## Google Sheet columns (row 1 = headers)
-A: Name | B: Phone (E.164) | C: Website | D: Status | E: Notes | F: Last Called
+## Google Sheet — existing spreadsheet (4 tabs)
+Tabs: New Leads | Initial Email Sent | Needs Follow Up | No Reply/Declined
 
-Note: Phone must be in E.164 format (+1XXXXXXXXXX) for dialing to work.
+| Col | Header | Dialer use |
+|-----|--------|------------|
+| A | name | (fallback display name) |
+| B | business_name | display name (primary) |
+| E | phone | dial target — auto-normalized to E.164 |
+| F | website | sidebar link |
+| J | notes | call notes (written on update) |
+| U | aging_days | existing column — do not overwrite |
+| V | call_status | dialer disposition (New/Called/Callback/Not interested) |
+| W | last_called | ISO timestamp of last dialer call |
+
+`sheets.js` reads `A:W`. `updateLead()` writes J, V, W via batchUpdate (non-contiguous).
 
 ## Supabase calls table
 ```sql
@@ -88,12 +99,14 @@ create table calls (
 - [x] Google Sheets connected — leads loading (fixed `Sheet1!` range prefix)
 - [x] Supabase connected — calls table created
 - [x] UI loads and shows green **Ready** status (SignalWire WebSocket connected)
-- [x] Git repo initialized with commits
-- [x] Pushed to GitHub — https://github.com/ajvirtualsolutionsph/phone-dialer (private)
+- [x] Git repo initialized and pushed to GitHub — https://github.com/ajvirtualsolutionsph/phone-dialer (private)
+- [x] Google Sheets remapped to existing spreadsheet (`1Zq7muXisE8QywVGXtRE6OqyDRl84UKWy37HoorjxO3s`)
+- [x] Phone normalization added (US local format → E.164 automatically)
+- [x] Added `call_status` (V) and `last_called` (W) columns to all 4 sheet tabs
+- [x] `aging_days` column (U) preserved on all 4 tabs
 
 ### 🔲 Next Session
-- [ ] **Test an actual call** — type a US number manually (`+1XXXXXXXXXX`), hit Call, verify PSTN rings
-- [ ] **Fix Google Sheet column order** — current sheet columns don't match expected layout, or remap `lib/sheets.js` to match actual sheet
+- [ ] **Test an actual call** — start both servers, type a US number (`+1XXXXXXXXXX`), hit Call, verify PSTN rings
 
 ### 🔲 Later
 - [ ] Deploy backend to Render
