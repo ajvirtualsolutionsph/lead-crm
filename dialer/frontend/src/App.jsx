@@ -5,6 +5,7 @@ import StatusBar from './components/StatusBar.jsx';
 import LeadsSidebar from './components/LeadsSidebar.jsx';
 import Dialer from './components/Dialer.jsx';
 import CallLog from './components/CallLog.jsx';
+import { T } from './theme.js';
 
 export default function App() {
   const sw = useSignalWire();
@@ -19,7 +20,7 @@ export default function App() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: 'system-ui, sans-serif' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: 'system-ui, sans-serif', background: T.appBg }}>
       <StatusBar status={sw.status} />
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         <LeadsSidebar
@@ -31,13 +32,15 @@ export default function App() {
           activeSheet={activeSheet}
           onSwitchSheet={switchSheet}
         />
-        <div style={{ flex: 1, padding: 20, overflowY: 'auto', background: '#f9fafb' }}>
+        <div style={{ flex: 1, padding: 20, overflowY: 'auto', background: T.appBg }}>
           <Dialer
             sw={sw}
             selectedLead={selectedLead}
             onCallLogged={handleCallLogged}
             leads={leads}
             setSelectedLead={setSelectedLead}
+            transcript={sw.transcript}
+            interimText={sw.interimText}
           />
           <CallLog refreshKey={callLogKey} />
         </div>

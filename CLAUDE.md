@@ -106,9 +106,12 @@ create table calls (
 - [x] `aging_days` column (U) preserved on all 4 tabs
 - [x] Leads sidebar has 4 sheet tab buttons — defaults to "No Reply/Declined" on load
 - [x] `getLeads(sheetName)` / `updateLead(..., sheetName)` — sheet-aware reads and writes
+- [x] Dark mode UI — `#152238` navy palette, cyan `#38bdf8` accent, all components themed via `src/theme.js`
+- [x] Live call transcription — Web Speech API captures agent's mic in real time; transcript pre-fills notes on hang-up
+- [x] `VITE_SIGNALWIRE_FROM_NUMBER` added to frontend `.env`; `from` param wired into `dial()` call
 
 ### 🔲 Next Session
-- [ ] **Test an actual call** — start both servers, type a US number (`+1XXXXXXXXXX`), hit Call, verify PSTN rings
+- [ ] **Test an actual call** — start both servers, type a US number (`+1XXXXXXXXXX`), hit Call, verify PSTN rings, check dark UI and transcription panel
 
 ### 🔲 Later
 - [ ] Deploy backend to Render
