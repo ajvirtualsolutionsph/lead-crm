@@ -1,11 +1,14 @@
 import { Router } from 'express';
-import { getLeads, updateLead } from '../lib/sheets.js';
+import { getLeads, updateLead, SHEET_TABS } from '../lib/sheets.js';
 
 const router = Router();
 
-router.get('/', async (_req, res) => {
+router.get('/tabs', (_req, res) => res.json(SHEET_TABS));
+
+router.get('/', async (req, res) => {
   try {
-    const leads = await getLeads();
+    const sheet = req.query.sheet || 'No Reply/Declined';
+    const leads = await getLeads(sheet);
     res.json(leads);
   } catch (err) {
     console.error('Leads fetch error:', err);
@@ -16,8 +19,8 @@ router.get('/', async (_req, res) => {
 router.patch('/:rowIndex', async (req, res) => {
   try {
     const rowIndex = parseInt(req.params.rowIndex, 10);
-    const { status, notes } = req.body;
-    await updateLead(rowIndex, status, notes);
+    const { status, notes, sheet } = req.body;
+    await updateLead(rowIndex, status, notes, sheet);
     res.json({ success: true });
   } catch (err) {
     console.error('Lead update error:', err);

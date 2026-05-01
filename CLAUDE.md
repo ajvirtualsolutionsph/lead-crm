@@ -73,7 +73,7 @@ Tabs: New Leads | Initial Email Sent | Needs Follow Up | No Reply/Declined
 | V | call_status | dialer disposition (New/Called/Callback/Not interested) |
 | W | last_called | ISO timestamp of last dialer call |
 
-`sheets.js` reads `A:W`. `updateLead()` writes J, V, W via batchUpdate (non-contiguous).
+`getLeads(sheetName)` reads `'SheetName'!A:W` — defaults to `'No Reply/Declined'`. `updateLead(rowIndex, status, notes, sheetName)` writes J, V, W via batchUpdate to the correct tab. `GET /api/leads?sheet=` accepts sheet name as query param.
 
 ## Supabase calls table
 ```sql
@@ -104,6 +104,8 @@ create table calls (
 - [x] Phone normalization added (US local format → E.164 automatically)
 - [x] Added `call_status` (V) and `last_called` (W) columns to all 4 sheet tabs
 - [x] `aging_days` column (U) preserved on all 4 tabs
+- [x] Leads sidebar has 4 sheet tab buttons — defaults to "No Reply/Declined" on load
+- [x] `getLeads(sheetName)` / `updateLead(..., sheetName)` — sheet-aware reads and writes
 
 ### 🔲 Next Session
 - [ ] **Test an actual call** — start both servers, type a US number (`+1XXXXXXXXXX`), hit Call, verify PSTN rings

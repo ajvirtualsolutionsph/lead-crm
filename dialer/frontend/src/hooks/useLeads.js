@@ -5,11 +5,12 @@ export function useLeads() {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedLead, setSelectedLead] = useState(null);
+  const [activeSheet, setActiveSheet] = useState('No Reply/Declined');
 
-  const fetchLeads = useCallback(async () => {
+  const fetchLeads = useCallback(async (sheet) => {
     setLoading(true);
     try {
-      const { data } = await axios.get('/api/leads');
+      const { data } = await axios.get('/api/leads', { params: { sheet } });
       setLeads(data);
     } catch (err) {
       console.error('Failed to fetch leads:', err);
@@ -18,9 +19,15 @@ export function useLeads() {
     }
   }, []);
 
-  const updateLead = useCallback(async (rowIndex, status, notes) => {
+  const switchSheet = useCallback((sheet) => {
+    setActiveSheet(sheet);
+    setSelectedLead(null);
+    fetchLeads(sheet);
+  }, [fetchLeads]);
+
+  const updateLead = useCallback(async (rowIndex, status, notes, sheet) => {
     try {
-      await axios.patch(`/api/leads/${rowIndex}`, { status, notes });
+      await axios.patch(`/api/leads/${rowIndex}`, { status, notes, sheet });
       setLeads(prev =>
         prev.map(l => (l.rowIndex === rowIndex ? { ...l, status, notes } : l))
       );
@@ -29,5 +36,5 @@ export function useLeads() {
     }
   }, []);
 
-  return { leads, loading, selectedLead, setSelectedLead, fetchLeads, updateLead };
+  return { leads, loading, selectedLead, setSelectedLead, fetchLeads, updateLead, activeSheet, switchSheet };
 }

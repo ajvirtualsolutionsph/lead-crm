@@ -8,14 +8,14 @@ import CallLog from './components/CallLog.jsx';
 
 export default function App() {
   const sw = useSignalWire();
-  const { leads, loading, selectedLead, setSelectedLead, fetchLeads, updateLead } = useLeads();
+  const { leads, loading, selectedLead, setSelectedLead, fetchLeads, updateLead, activeSheet, switchSheet } = useLeads();
   const [callLogKey, setCallLogKey] = useState(0);
 
-  useEffect(() => { fetchLeads(); }, [fetchLeads]);
+  useEffect(() => { fetchLeads('No Reply/Declined'); }, [fetchLeads]);
 
   function handleCallLogged() {
     setCallLogKey(k => k + 1);
-    fetchLeads();
+    fetchLeads(activeSheet);
   }
 
   return (
@@ -28,6 +28,8 @@ export default function App() {
           selectedLead={selectedLead}
           onSelect={setSelectedLead}
           onRefresh={fetchLeads}
+          activeSheet={activeSheet}
+          onSwitchSheet={switchSheet}
         />
         <div style={{ flex: 1, padding: 20, overflowY: 'auto', background: '#f9fafb' }}>
           <Dialer

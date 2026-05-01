@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+
+const TABS = ['New Leads', 'Initial Email Sent', 'Needs Follow Up', 'No Reply/Declined'];
 
 const STATUS_COLORS = {
   New: { bg: '#dbeafe', text: '#1d4ed8' },
@@ -7,7 +9,7 @@ const STATUS_COLORS = {
   'Not interested': { bg: '#fee2e2', text: '#b91c1c' },
 };
 
-export default function LeadsSidebar({ leads, loading, selectedLead, onSelect, onRefresh }) {
+export default function LeadsSidebar({ leads, loading, selectedLead, onSelect, onRefresh, activeSheet, onSwitchSheet }) {
   const [query, setQuery] = useState('');
 
   const filtered = leads.filter(l =>
@@ -17,8 +19,32 @@ export default function LeadsSidebar({ leads, loading, selectedLead, onSelect, o
 
   return (
     <div style={{ width: 300, display: 'flex', flexDirection: 'column', borderRight: '1px solid #e5e7eb', height: '100%' }}>
-      <div style={{ padding: '12px 12px 8px', borderBottom: '1px solid #e5e7eb' }}>
-        <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+      {/* Sheet tabs */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, padding: '8px 8px 0', borderBottom: '1px solid #e5e7eb' }}>
+        {TABS.map(tab => (
+          <button
+            key={tab}
+            onClick={() => onSwitchSheet(tab)}
+            style={{
+              padding: '4px 8px',
+              fontSize: 11,
+              borderRadius: 4,
+              border: '1px solid',
+              cursor: 'pointer',
+              borderColor: activeSheet === tab ? '#3b82f6' : '#d1d5db',
+              background: activeSheet === tab ? '#eff6ff' : '#f9fafb',
+              color: activeSheet === tab ? '#1d4ed8' : '#374151',
+              fontWeight: activeSheet === tab ? 600 : 400,
+            }}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {/* Search + refresh */}
+      <div style={{ padding: '8px 12px 6px', borderBottom: '1px solid #e5e7eb' }}>
+        <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
           <input
             type="text"
             value={query}
@@ -27,7 +53,7 @@ export default function LeadsSidebar({ leads, loading, selectedLead, onSelect, o
             style={{ flex: 1, padding: '6px 10px', borderRadius: 4, border: '1px solid #d1d5db', fontSize: 13 }}
           />
           <button
-            onClick={onRefresh}
+            onClick={() => onRefresh(activeSheet)}
             title="Refresh"
             style={{ padding: '6px 10px', borderRadius: 4, border: '1px solid #d1d5db', background: '#f9fafb', cursor: 'pointer', fontSize: 13 }}
           >
@@ -37,17 +63,18 @@ export default function LeadsSidebar({ leads, loading, selectedLead, onSelect, o
         <p style={{ margin: 0, fontSize: 12, color: '#6b7280' }}>{filtered.length} leads</p>
       </div>
 
+      {/* Lead list */}
       <div style={{ overflowY: 'auto', flex: 1 }}>
         {loading && <p style={{ padding: 12, color: '#6b7280', fontSize: 13 }}>Loading…</p>}
         {!loading && filtered.length === 0 && (
           <p style={{ padding: 12, color: '#6b7280', fontSize: 13 }}>No leads found.</p>
         )}
         {filtered.map(lead => {
-          const isSelected = selectedLead?.rowIndex === lead.rowIndex;
+          const isSelected = selectedLead?.rowIndex === lead.rowIndex && selectedLead?.sheet === lead.sheet;
           const badge = STATUS_COLORS[lead.status] || STATUS_COLORS['New'];
           return (
             <div
-              key={lead.rowIndex}
+              key={`${lead.sheet}-${lead.rowIndex}`}
               onClick={() => onSelect(lead)}
               style={{
                 padding: '10px 12px',
