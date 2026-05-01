@@ -1,0 +1,45 @@
+import { useEffect, useState } from 'react';
+import { useSignalWire } from './hooks/useSignalWire.js';
+import { useLeads } from './hooks/useLeads.js';
+import StatusBar from './components/StatusBar.jsx';
+import LeadsSidebar from './components/LeadsSidebar.jsx';
+import Dialer from './components/Dialer.jsx';
+import CallLog from './components/CallLog.jsx';
+
+export default function App() {
+  const sw = useSignalWire();
+  const { leads, loading, selectedLead, setSelectedLead, fetchLeads, updateLead } = useLeads();
+  const [callLogKey, setCallLogKey] = useState(0);
+
+  useEffect(() => { fetchLeads(); }, [fetchLeads]);
+
+  function handleCallLogged() {
+    setCallLogKey(k => k + 1);
+    fetchLeads();
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: 'system-ui, sans-serif' }}>
+      <StatusBar status={sw.status} />
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+        <LeadsSidebar
+          leads={leads}
+          loading={loading}
+          selectedLead={selectedLead}
+          onSelect={setSelectedLead}
+          onRefresh={fetchLeads}
+        />
+        <div style={{ flex: 1, padding: 20, overflowY: 'auto', background: '#f9fafb' }}>
+          <Dialer
+            sw={sw}
+            selectedLead={selectedLead}
+            onCallLogged={handleCallLogged}
+            leads={leads}
+            setSelectedLead={setSelectedLead}
+          />
+          <CallLog refreshKey={callLogKey} />
+        </div>
+      </div>
+    </div>
+  );
+}
