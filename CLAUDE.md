@@ -89,11 +89,11 @@ create table calls (
 - [x] Supabase connected — calls table created
 - [x] UI loads and shows green **Ready** status (SignalWire WebSocket connected)
 - [x] Git repo initialized with commits
+- [x] Pushed to GitHub — https://github.com/ajvirtualsolutionsph/phone-dialer (private)
 
 ### 🔲 Next Session
 - [ ] **Test an actual call** — type a US number manually (`+1XXXXXXXXXX`), hit Call, verify PSTN rings
 - [ ] **Fix Google Sheet column order** — current sheet columns don't match expected layout, or remap `lib/sheets.js` to match actual sheet
-- [ ] **Push to GitHub** — create repo at github.com/new (private, no README), add remote, push
 
 ### 🔲 Later
 - [ ] Deploy backend to Render
