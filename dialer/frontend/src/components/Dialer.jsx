@@ -78,6 +78,7 @@ export default function Dialer({ sw, selectedLead, onCallLogged, leads, setSelec
   }
 
   const isActive = status === 'in-call' || status === 'ringing' || status === 'connecting';
+  const isReady = status === 'ready';
 
   return (
     <div style={{ padding: 20, background: T.panelBg, borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
@@ -112,8 +113,8 @@ export default function Dialer({ sw, selectedLead, onCallLogged, leads, setSelec
         {!isActive && (
           <button
             onClick={handleCall}
-            disabled={!number}
-            style={{ flex: 1, padding: 14, background: T.callGreen, color: T.textInverted, border: 'none', borderRadius: 6, fontSize: 16, cursor: 'pointer' }}
+            disabled={!number || !isReady}
+            style={{ flex: 1, padding: 14, background: T.callGreen, color: T.textInverted, border: 'none', borderRadius: 6, fontSize: 16, cursor: !number || !isReady ? 'not-allowed' : 'pointer', opacity: !number || !isReady ? 0.6 : 1 }}
           >
             Call
           </button>

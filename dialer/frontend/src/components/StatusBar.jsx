@@ -1,19 +1,21 @@
 import { T } from '../theme.js';
 
 const STATUS_LABELS = {
-  idle:       'Ready',
-  connecting: 'Connecting…',
-  ringing:    'Ringing…',
-  'in-call':  'In Call',
-  error:      'Error',
+  initializing: 'Initializing…',
+  ready:        'Ready',
+  connecting:   'Connecting…',
+  ringing:      'Ringing…',
+  'in-call':    'In Call',
+  error:        'Error — check backend',
 };
 
 const STATUS_COLORS = {
-  idle:       T.statusIdle,
-  connecting: T.statusConnecting,
-  ringing:    T.statusRinging,
-  'in-call':  T.statusInCall,
-  error:      T.statusError,
+  initializing: T.statusConnecting,
+  ready:        T.statusIdle,
+  connecting:   T.statusConnecting,
+  ringing:      T.statusRinging,
+  'in-call':    T.statusInCall,
+  error:        T.statusError,
 };
 
 export default function StatusBar({ status }) {

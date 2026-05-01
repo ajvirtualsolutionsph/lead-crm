@@ -23,11 +23,19 @@ dialer/
         └── hooks/        useSignalWire.js, useLeads.js
 ```
 
-## SDK Architecture (Call Fabric v3)
-- Token: `POST /api/relay/rest/jwt` — returns RELAY JWT, no SMS verification needed
-- Frontend: `SignalWire({ token, host })` from `@signalwire/js` v3
-- Call flow: `client.dial({ to, audio: true })` → `call.start()` / `call.end()` / `call.audioMute()`
-- No TwiML webhooks needed — all routing over WebSocket
+## Call Architecture — REST mode (current)
+- `useSignalWire.js` uses REST only — no WebSocket/SDK needed
+- Call flow: `POST /api/calls/initiate` → SignalWire LaML REST API → target phone rings
+- Hang up: `POST /api/calls/hangup` with callSid → SignalWire cancels call
+- Status starts `'ready'` immediately on page load
+- **Blocked by**: SignalWire trial restrictions — upgrade account to call any US number
+- **Upgrade path**: add WebRTC back once SignalWire account is funded (see Later section)
+
+## SDK Architecture — WebRTC mode (paused, needs funded account)
+- Token: `POST /api/fabric/subscribers/tokens` with `{ reference: 'dialer-agent' }`
+- Frontend: `SignalWire({ token, host })` from `@signalwire/js` v3 (Call Fabric)
+- Call flow: `client.dial({ to, from, audio: true })` → `call.start()` / `call.end()`
+- Blocked by: subscriber token creation requires account balance (SMS verification fee)
 
 ## Backend .env
 ```
@@ -98,7 +106,6 @@ create table calls (
 - [x] Token endpoint working — returns valid RELAY JWT
 - [x] Google Sheets connected — leads loading (fixed `Sheet1!` range prefix)
 - [x] Supabase connected — calls table created
-- [x] UI loads and shows green **Ready** status (SignalWire WebSocket connected)
 - [x] Git repo initialized and pushed to GitHub — https://github.com/ajvirtualsolutionsph/phone-dialer (private)
 - [x] Google Sheets remapped to existing spreadsheet (`1Zq7muXisE8QywVGXtRE6OqyDRl84UKWy37HoorjxO3s`)
 - [x] Phone normalization added (US local format → E.164 automatically)
@@ -108,10 +115,14 @@ create table calls (
 - [x] `getLeads(sheetName)` / `updateLead(..., sheetName)` — sheet-aware reads and writes
 - [x] Dark mode UI — `#152238` navy palette, cyan `#38bdf8` accent, all components themed via `src/theme.js`
 - [x] Live call transcription — Web Speech API captures agent's mic in real time; transcript pre-fills notes on hang-up
-- [x] `VITE_SIGNALWIRE_FROM_NUMBER` added to frontend `.env`; `from` param wired into `dial()` call
+- [x] Switched to REST-mode calling — `POST /calls/initiate` + `POST /calls/hangup` via SignalWire LaML API
+- [x] Status bar now shows accurate states: `initializing → ready → connecting → in-call → error`
+- [x] Call button disabled until client ready; silent failure fixed with proper error display
 
 ### 🔲 Next Session
-- [ ] **Test an actual call** — start both servers, type a US number (`+1XXXXXXXXXX`), hit Call, verify PSTN rings, check dark UI and transcription panel
+- [ ] **Upgrade SignalWire account from trial** — removes restriction on calling unverified numbers
+- [ ] **Test an actual call to a US lead** — click lead, hit Call, verify target phone rings, log outcome
+- [ ] **Restore WebRTC audio** — switch back from REST mode once account is funded (fund account → subscriber token works → re-enable `@signalwire/js` client)
 
 ### 🔲 Later
 - [ ] Deploy backend to Render

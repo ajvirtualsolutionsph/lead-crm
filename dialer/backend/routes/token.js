@@ -7,16 +7,16 @@ router.post('/', async (_req, res) => {
     const { SIGNALWIRE_PROJECT_ID, SIGNALWIRE_API_TOKEN, SIGNALWIRE_SPACE_URL } = process.env;
     const credentials = Buffer.from(`${SIGNALWIRE_PROJECT_ID}:${SIGNALWIRE_API_TOKEN}`).toString('base64');
 
-    // SignalWire RELAY REST JWT — generates a token from credentials, no SMS verification needed
+    // Call Fabric subscriber token — required for @signalwire/js v3 SignalWire() client
     const response = await fetch(
-      `https://${SIGNALWIRE_SPACE_URL}/api/relay/rest/jwt`,
+      `https://${SIGNALWIRE_SPACE_URL}/api/fabric/subscribers/tokens`,
       {
         method: 'POST',
         headers: {
           'Authorization': `Basic ${credentials}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ expires_in: 3600 }),
+        body: JSON.stringify({ reference: 'dialer-agent' }),
       }
     );
 
@@ -27,8 +27,8 @@ router.post('/', async (_req, res) => {
     }
 
     const data = await response.json();
-    // endpoint returns { jwt_token: '...' } or { token: '...' }
-    const token = data.jwt_token || data.token;
+    console.log('SignalWire token response keys:', Object.keys(data));
+    const token = data.token || data.subscriber_token || data.jwt_token;
     res.json({ token });
   } catch (err) {
     console.error('Token error:', err);
