@@ -82,12 +82,13 @@ Tabs: New Leads | Initial Email Sent | Needs Follow Up | No Reply/Declined
 | B | business_name | display name (primary) |
 | E | phone | dial target — auto-normalized to E.164 |
 | F | website | sidebar link |
-| J | notes | call notes (written on update) |
+| J | notes | existing column — do NOT write here |
 | U | aging_days | existing column — do not overwrite |
 | V | call_status | dialer disposition (New/Called/Callback/Not interested) |
 | W | last_called | ISO timestamp of last dialer call |
+| X | dialer_notes | call outcome notes written by dialer (new column, session 6) |
 
-`getLeads(sheetName)` reads `'SheetName'!A:W` — defaults to `'No Reply/Declined'`. `updateLead(rowIndex, status, notes, sheetName)` writes J, V, W via batchUpdate to the correct tab. `GET /api/leads?sheet=` accepts sheet name as query param.
+`getLeads(sheetName)` reads `'SheetName'!A:X` — defaults to `'No Reply/Declined'`. `updateLead(rowIndex, status, notes, sheetName)` writes V, W, X via batchUpdate to the correct tab. Column X added via `initDialerColumns()` called on backend startup. `GET /api/leads?sheet=` accepts sheet name as query param.
 
 ## Supabase calls table
 ```sql
@@ -138,10 +139,13 @@ create table calls (
 - [x] Backend auto-configures inbound webhook on startup via `RENDER_EXTERNAL_URL`
 - [x] Removed "Your phone" field from UI — replaced with join-call banner showing +12525303318
 - [x] **Conference bridge verified end-to-end** — two-way audio confirmed via +18005551212 test (session 5)
+- [x] Moved dialer call notes from col J (existing notes) to new col X (`dialer_notes`) — col J no longer touched
+- [x] `initDialerColumns()` added — writes `dialer_notes` header to X1 on all 4 tabs at backend startup
+- [x] Grid expanded to 24 columns on all 4 sheet tabs (was 23/A–W)
 
 ### 🔲 Next Session
 - [ ] **Test with a real lead** — click a lead from the sidebar, click Call, dial +12525303318 to join, verify two-way conversation
-- [ ] **Log a completed real call** — fill outcome form, verify Supabase row + Google Sheet cols V/W update
+- [ ] **Log a completed real call** — fill outcome form, verify Supabase row + Google Sheet cols V/W/X update
 - [ ] **Optional**: when SignalWire support enables +63 dialing, agent can receive calls directly instead of dialing in
 
 ### 🔲 Later
