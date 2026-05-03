@@ -142,10 +142,17 @@ create table calls (
 - [x] Moved dialer call notes from col J (existing notes) to new col X (`dialer_notes`) — col J no longer touched
 - [x] `initDialerColumns()` added — writes `dialer_notes` header to X1 on all 4 tabs at backend startup
 - [x] Grid expanded to 24 columns on all 4 sheet tabs (was 23/A–W)
+- [x] GitHub repo made public — https://github.com/ajvirtualsolutionsph/phone-dialer (.env never committed, safe)
+
+## Agent workflow (session 6)
+- Agent joins calls by dialing **+12525303318** via **Viber Out** from their PH phone (Viber Out → US number, no UDP block)
+- Best calling window: **9–11 PM PHT** = 9–11 AM US Eastern (prime business hours for East Coast leads)
+- West Coast leads require midnight+ PHT — target East Coast first
 
 ### 🔲 Next Session
-- [ ] **Test with a real lead** — click a lead from the sidebar, click Call, dial +12525303318 to join, verify two-way conversation
+- [ ] **Test with a real lead** — click a lead from the sidebar, click Call, dial +12525303318 via Viber Out to join
 - [ ] **Log a completed real call** — fill outcome form, verify Supabase row + Google Sheet cols V/W/X update
+- [ ] **GitHub profile** — add repo descriptions, topics, and profile README (gh CLI not installed; do via GitHub web UI)
 - [ ] **Optional**: when SignalWire support enables +63 dialing, agent can receive calls directly instead of dialing in
 
 ### 🔲 Later
