@@ -23,15 +23,18 @@ dialer/
         └── hooks/        useSignalWire.js, useLeads.js
 ```
 
-## Call Architecture — PSTN Conference Bridge (current)
+## Call Architecture — Agent-Calls-In Conference Bridge (current)
 - No WebRTC in browser — pure REST + LaML conference
-- Call flow: `POST /api/calls/initiate { to, agentPhone }` → backend creates LaML conference → calls lead AND agent's phone → both bridged
-- Lead TwiML: `<Conference startConferenceOnEnter="false">` — lead hears hold music until agent joins
-- Agent TwiML: `<Conference startConferenceOnEnter="true" endConferenceOnExit="true">` — conference starts when agent picks up; ends when agent hangs up
-- Hang up: `POST /api/calls/hangup` called twice (lead SID + agent SID) via `Promise.all`
+- Call flow: `POST /api/calls/initiate { to }` → backend dials lead only → lead hears hold music → agent dials +12525303318 from their phone → both bridged
+- Lead TwiML: `<Conference startConferenceOnEnter="false" endConferenceOnExit="true">` — lead hears hold music until agent joins
+- Agent TwiML: `<Conference startConferenceOnEnter="true" endConferenceOnExit="true">` — served via `POST /calls/inbound` webhook when agent calls in
+- Hang up: `POST /api/calls/hangup { callSid: leadCallSid }` — clears activeConference state
 - Status starts `'ready'` immediately on page load
-- Agent phone stored in `localStorage` — entered once in the "Your phone" field in the Dialer UI
-- **Why not WebRTC**: UDP ports to SignalWire media servers blocked from Philippines ISP → ICE connectivity check times out. `<Connect><Room>` Video.RoomSession approach tried but browser WebRTC audio couldn't establish.
+- No "Your phone" field — agent always dials +12525303318 to join
+- `activeConference` stored in memory on backend — single-agent dialer, one call at a time
+- Backend auto-configures SignalWire inbound webhook on startup via `RENDER_EXTERNAL_URL`
+- **Why agent-calls-in**: SignalWire international dialing to +63 blocked by default; agent calling a US number works from any phone via regular call or VoIP app
+- **Why not WebRTC**: UDP ports to SignalWire media servers blocked from Philippines ISP → ICE connectivity check times out.
 
 ## WebRTC investigation history (session 3)
 1. Tried `client.dial({ to: phoneNumber })` via Call Fabric subscriber token — "Invalid RTCPeer ID", dial address format wrong
@@ -130,11 +133,16 @@ create table calls (
 - [x] Frontend deployed to Vercel — https://phone-dialer-six.vercel.app
 - [x] Fixed production API calls — axios `baseURL` set from `VITE_BACKEND_URL` (Vite proxy only works in dev)
 - [x] CORS wired up — `FRONTEND_URL` set to Vercel URL in Render env vars
+- [x] Supabase + Google Sheets logging verified end-to-end (session 5)
+- [x] Switched to agent-calls-in architecture — SignalWire dials lead only; agent calls +12525303318 to join (bypasses PH international dialing block)
+- [x] Backend auto-configures inbound webhook on startup via `RENDER_EXTERNAL_URL`
+- [x] Removed "Your phone" field from UI — replaced with join-call banner showing +12525303318
+- [x] **Conference bridge verified end-to-end** — two-way audio confirmed via +18005551212 test (session 5)
 
 ### 🔲 Next Session
-- [ ] **Wait for SignalWire support** to enable international dialing, then enable Philippines (+63) in Geographic Permissions
-- [ ] **Test two-legged call end-to-end** on live URLs — enter PH mobile, click a lead, verify both phones ring
-- [ ] **Log a completed call** — fill outcome form, save, verify Supabase row + Google Sheet cols V/W update
+- [ ] **Test with a real lead** — click a lead from the sidebar, click Call, dial +12525303318 to join, verify two-way conversation
+- [ ] **Log a completed real call** — fill outcome form, verify Supabase row + Google Sheet cols V/W update
+- [ ] **Optional**: when SignalWire support enables +63 dialing, agent can receive calls directly instead of dialing in
 
 ### 🔲 Later
 - [ ] Investigate WebRTC audio for browser-based calling (requires TURN relay or different ISP)
