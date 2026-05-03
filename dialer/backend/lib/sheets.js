@@ -11,6 +11,18 @@ const SHEET_ID = process.env.GOOGLE_SHEET_ID;
 
 export const SHEET_TABS = ['New Leads', 'Initial Email Sent', 'Needs Follow Up', 'No Reply/Declined'];
 
+export async function initDialerColumns() {
+  const data = SHEET_TABS.map(tab => ({
+    range: `'${tab}'!X1`,
+    values: [['dialer_notes']],
+  }));
+  await sheets.spreadsheets.values.batchUpdate({
+    spreadsheetId: SHEET_ID,
+    requestBody: { valueInputOption: 'USER_ENTERED', data },
+  });
+  console.log('Sheet headers initialized: dialer_notes (col X) on all tabs');
+}
+
 function normalizePhone(raw) {
   if (!raw) return '';
   const digits = raw.replace(/\D/g, '');

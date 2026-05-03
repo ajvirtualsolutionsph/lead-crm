@@ -5,6 +5,7 @@ import cors from 'cors';
 import tokenRoute from './routes/token.js';
 import leadsRoute from './routes/leads.js';
 import callsRoute from './routes/calls.js';
+import { initDialerColumns } from './lib/sheets.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -22,6 +23,7 @@ app.use('/calls', callsRoute);
 app.listen(PORT, () => {
   console.log(`Backend running on port ${PORT}`);
   setupInboundWebhook();
+  initDialerColumns().catch(err => console.error('Sheet init failed (non-fatal):', err.message));
 });
 
 async function setupInboundWebhook() {
