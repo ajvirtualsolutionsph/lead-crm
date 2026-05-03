@@ -69,7 +69,7 @@ export function useSignalWire() {
       setTranscript([]);
       setInterimText('');
 
-      const { data } = await axios.post('/api/calls/initiate', {
+      const { data } = await axios.post('/calls/initiate', {
         to: phoneNumber,
         agentPhone,
       });
@@ -91,8 +91,8 @@ export function useSignalWire() {
     setStatus('ready');
     try {
       await Promise.all([
-        sids.lead ? axios.post('/api/calls/hangup', { callSid: sids.lead }) : Promise.resolve(),
-        sids.agent ? axios.post('/api/calls/hangup', { callSid: sids.agent }) : Promise.resolve(),
+        sids.lead ? axios.post('/calls/hangup', { callSid: sids.lead }) : Promise.resolve(),
+        sids.agent ? axios.post('/calls/hangup', { callSid: sids.agent }) : Promise.resolve(),
       ]);
     } catch (e) { console.error('Hangup error:', e.message); }
   }, []);

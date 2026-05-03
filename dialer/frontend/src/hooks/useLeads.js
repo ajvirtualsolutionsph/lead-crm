@@ -10,7 +10,7 @@ export function useLeads() {
   const fetchLeads = useCallback(async (sheet) => {
     setLoading(true);
     try {
-      const { data } = await axios.get('/api/leads', { params: { sheet } });
+      const { data } = await axios.get('/leads', { params: { sheet } });
       setLeads(data);
     } catch (err) {
       console.error('Failed to fetch leads:', err);
@@ -27,7 +27,7 @@ export function useLeads() {
 
   const updateLead = useCallback(async (rowIndex, status, notes, sheet) => {
     try {
-      await axios.patch(`/api/leads/${rowIndex}`, { status, notes, sheet });
+      await axios.patch(`/leads/${rowIndex}`, { status, notes, sheet });
       setLeads(prev =>
         prev.map(l => (l.rowIndex === rowIndex ? { ...l, status, notes } : l))
       );

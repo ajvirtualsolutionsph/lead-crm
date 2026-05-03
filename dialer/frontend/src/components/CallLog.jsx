@@ -18,7 +18,7 @@ export default function CallLog({ refreshKey }) {
   const [calls, setCalls] = useState([]);
 
   useEffect(() => {
-    axios.get('/api/calls')
+    axios.get('/calls')
       .then(r => setCalls(r.data))
       .catch(err => console.error('Failed to fetch call log:', err));
   }, [refreshKey]);

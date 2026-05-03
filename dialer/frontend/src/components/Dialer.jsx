@@ -59,13 +59,14 @@ export default function Dialer({ sw, selectedLead, onCallLogged, leads, setSelec
 
   async function handleSaveAndNext() {
     try {
-      await axios.post('/api/calls', {
+      await axios.post('/calls', {
         leadName: selectedLead?.name || '',
         phone: number,
         durationSeconds: lastDuration,
         status: outcome,
         notes,
         rowIndex: selectedLead?.rowIndex,
+        sheetName: selectedLead?.sheet,
       });
     } catch (err) {
       console.error('Failed to log call:', err);
