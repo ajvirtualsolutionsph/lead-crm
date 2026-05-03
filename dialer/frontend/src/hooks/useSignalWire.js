@@ -7,7 +7,7 @@ export function useSignalWire() {
   const [isMuted, setIsMuted] = useState(false);
   const [transcript, setTranscript] = useState([]);
   const [interimText, setInterimText] = useState('');
-  const callSidsRef = useRef({ lead: null, agent: null });
+  const leadCallSidRef = useRef(null);
   const timerRef = useRef(null);
   const recognitionRef = useRef(null);
 
@@ -47,7 +47,7 @@ export function useSignalWire() {
       setInterimText(interim);
     };
     recognition.onerror = () => {};
-    recognition.onend = () => { if (callSidsRef.current.lead) recognition.start(); };
+    recognition.onend = () => { if (leadCallSidRef.current) recognition.start(); };
     recognition.start();
     recognitionRef.current = recognition;
   }
@@ -61,19 +61,16 @@ export function useSignalWire() {
     setInterimText('');
   }
 
-  const makeCall = useCallback(async (phoneNumber, agentPhone) => {
-    if (!phoneNumber || !agentPhone) return;
+  const makeCall = useCallback(async (phoneNumber) => {
+    if (!phoneNumber) return;
     try {
       setStatus('connecting');
       setIsMuted(false);
       setTranscript([]);
       setInterimText('');
 
-      const { data } = await axios.post('/calls/initiate', {
-        to: phoneNumber,
-        agentPhone,
-      });
-      callSidsRef.current = { lead: data.leadCallSid, agent: data.agentCallSid };
+      const { data } = await axios.post('/calls/initiate', { to: phoneNumber });
+      leadCallSidRef.current = data.leadCallSid;
       setStatus('in-call');
       startTimer();
       startTranscription();
@@ -86,18 +83,14 @@ export function useSignalWire() {
   const hangUp = useCallback(async () => {
     stopTimer();
     stopTranscription();
-    const sids = callSidsRef.current;
-    callSidsRef.current = { lead: null, agent: null };
+    const sid = leadCallSidRef.current;
+    leadCallSidRef.current = null;
     setStatus('ready');
     try {
-      await Promise.all([
-        sids.lead ? axios.post('/calls/hangup', { callSid: sids.lead }) : Promise.resolve(),
-        sids.agent ? axios.post('/calls/hangup', { callSid: sids.agent }) : Promise.resolve(),
-      ]);
+      await axios.post('/calls/hangup', { callSid: sid });
     } catch (e) { console.error('Hangup error:', e.message); }
   }, []);
 
-  // Mute is not applicable for phone-based calls
   const toggleMute = useCallback(() => setIsMuted(m => !m), []);
 
   const clearTranscript = useCallback(() => {

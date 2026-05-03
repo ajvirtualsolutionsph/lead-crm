@@ -3,6 +3,7 @@ import axios from 'axios';
 import { T } from '../theme.js';
 
 const KEYS = ['1','2','3','4','5','6','7','8','9','*','0','#'];
+const AGENT_NUMBER = import.meta.env.VITE_SIGNALWIRE_FROM_NUMBER || '+12525303318';
 
 function formatDuration(secs) {
   const m = String(Math.floor(secs / 60)).padStart(2, '0');
@@ -13,16 +14,10 @@ function formatDuration(secs) {
 export default function Dialer({ sw, selectedLead, onCallLogged, leads, setSelectedLead, transcript, interimText }) {
   const { status, callDuration, isMuted, makeCall, hangUp, toggleMute } = sw;
   const [number, setNumber] = useState('');
-  const [agentPhone, setAgentPhone] = useState(() => localStorage.getItem('agentPhone') || '');
   const [outcome, setOutcome] = useState('Answered');
   const [notes, setNotes] = useState('');
   const [showOutcome, setShowOutcome] = useState(false);
   const [lastDuration, setLastDuration] = useState(0);
-
-  function handleAgentPhoneChange(e) {
-    setAgentPhone(e.target.value);
-    localStorage.setItem('agentPhone', e.target.value);
-  }
 
   useEffect(() => {
     if (selectedLead) setNumber(selectedLead.phone);
@@ -34,7 +29,6 @@ export default function Dialer({ sw, selectedLead, onCallLogged, leads, setSelec
     }
   }, [status]);
 
-  // Pre-fill notes with transcript when outcome form appears
   useEffect(() => {
     if (showOutcome && transcript && transcript.length > 0) {
       const body = transcript
@@ -49,7 +43,7 @@ export default function Dialer({ sw, selectedLead, onCallLogged, leads, setSelec
     setShowOutcome(false);
     setNotes('');
     setLastDuration(0);
-    makeCall(number, agentPhone);
+    makeCall(number);
   }
 
   function handleHangUp() {
@@ -76,7 +70,6 @@ export default function Dialer({ sw, selectedLead, onCallLogged, leads, setSelec
     setNotes('');
     onCallLogged();
 
-    // Advance to next lead
     if (selectedLead && leads) {
       const idx = leads.findIndex(l => l.rowIndex === selectedLead.rowIndex);
       const next = leads[idx + 1];
@@ -90,21 +83,6 @@ export default function Dialer({ sw, selectedLead, onCallLogged, leads, setSelec
   return (
     <div style={{ padding: 20, background: T.panelBg, borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
       <h2 style={{ margin: '0 0 16px', fontSize: 18, color: T.textPrimary }}>Dialer</h2>
-
-      {/* Agent phone — saved to localStorage */}
-      <div style={{ marginBottom: 12 }}>
-        <label style={{ fontSize: 11, color: T.textMuted, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>
-          Your phone (receives the call)
-        </label>
-        <input
-          type="tel"
-          value={agentPhone}
-          onChange={handleAgentPhoneChange}
-          placeholder="+63XXXXXXXXXX"
-          disabled={isActive}
-          style={{ width: '100%', padding: '8px 12px', fontSize: 15, border: `1px solid ${T.borderStrong}`, borderRadius: 6, boxSizing: 'border-box', background: T.inputBg, color: T.textPrimary }}
-        />
-      </div>
 
       {/* Number input */}
       <input
@@ -135,11 +113,10 @@ export default function Dialer({ sw, selectedLead, onCallLogged, leads, setSelec
         {!isActive && (
           <button
             onClick={handleCall}
-            disabled={!number || !agentPhone || !isReady}
-            title={!agentPhone ? 'Enter your phone number above first' : ''}
-            style={{ flex: 1, padding: 14, background: T.callGreen, color: T.textInverted, border: 'none', borderRadius: 6, fontSize: 16, cursor: !number || !agentPhone || !isReady ? 'not-allowed' : 'pointer', opacity: !number || !agentPhone || !isReady ? 0.6 : 1 }}
+            disabled={!number || !isReady}
+            style={{ flex: 1, padding: 14, background: T.callGreen, color: T.textInverted, border: 'none', borderRadius: 6, fontSize: 16, cursor: !number || !isReady ? 'not-allowed' : 'pointer', opacity: !number || !isReady ? 0.6 : 1 }}
           >
-            {!agentPhone ? 'Enter your phone above' : 'Call'}
+            Call
           </button>
         )}
         {isActive && (
@@ -159,6 +136,28 @@ export default function Dialer({ sw, selectedLead, onCallLogged, leads, setSelec
           </>
         )}
       </div>
+
+      {/* Join-call banner — shown while call is active */}
+      {isActive && (
+        <div style={{
+          marginTop: 14,
+          padding: '12px 14px',
+          background: '#1e3a5f',
+          border: '1px solid #38bdf8',
+          borderRadius: 6,
+          textAlign: 'center',
+        }}>
+          <div style={{ fontSize: 12, color: T.textMuted, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
+            To join the call, dial from your phone:
+          </div>
+          <div style={{ fontSize: 22, fontWeight: 700, color: '#38bdf8', letterSpacing: 2 }}>
+            {AGENT_NUMBER}
+          </div>
+          <div style={{ fontSize: 11, color: T.textMuted, marginTop: 4 }}>
+            The lead is on hold until you call in
+          </div>
+        </div>
+      )}
 
       {/* Live timer + transcript */}
       {status === 'in-call' && (

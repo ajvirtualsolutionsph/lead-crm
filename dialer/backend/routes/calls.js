@@ -4,6 +4,9 @@ import { updateLead } from '../lib/sheets.js';
 
 const router = Router();
 
+// Active conference state — single-agent dialer, one call at a time
+let activeConference = null;
+
 function swFetch(path, method, body, contentType = 'application/json') {
   const { SIGNALWIRE_PROJECT_ID, SIGNALWIRE_API_TOKEN, SIGNALWIRE_SPACE_URL } = process.env;
   const credentials = Buffer.from(`${SIGNALWIRE_PROJECT_ID}:${SIGNALWIRE_API_TOKEN}`).toString('base64');
@@ -28,27 +31,31 @@ async function restCall(to, from, twiml) {
   return r.json();
 }
 
+// Agent calls this SignalWire number to join the active conference
+router.post('/inbound', (req, res) => {
+  res.type('text/xml');
+  if (!activeConference) {
+    res.send('<Response><Say>There is no active call waiting. Goodbye.</Say></Response>');
+    return;
+  }
+  res.send(`<Response><Dial><Conference beep="false" startConferenceOnEnter="true" endConferenceOnExit="true">${activeConference}</Conference></Dial></Response>`);
+});
+
 router.post('/initiate', async (req, res) => {
   try {
-    const { to, agentPhone } = req.body;
+    const { to } = req.body;
     const { SIGNALWIRE_PHONE_NUMBER } = process.env;
     const confName = `dialer-${Date.now()}`;
 
-    // Lead joins the conference but waits (startConferenceOnEnter=false) — hears hold music
-    const leadTwiml = `<Response><Dial><Conference beep="false" startConferenceOnEnter="false" endConferenceOnExit="false">${confName}</Conference></Dial></Response>`;
+    // Lead waits in conference with hold music until agent calls in
+    const leadTwiml = `<Response><Dial><Conference beep="false" startConferenceOnEnter="false" endConferenceOnExit="true">${confName}</Conference></Dial></Response>`;
 
-    // Agent joins and starts the conference; conference ends when agent hangs up
-    const agentTwiml = `<Response><Dial><Conference beep="false" startConferenceOnEnter="true" endConferenceOnExit="true">${confName}</Conference></Dial></Response>`;
-
-    // Call lead first so their phone rings while agent is being connected
     const leadCall = await restCall(to, SIGNALWIRE_PHONE_NUMBER, leadTwiml);
     console.log('Lead call initiated:', leadCall.sid);
 
-    // Call agent's phone
-    const agentCall = await restCall(agentPhone, SIGNALWIRE_PHONE_NUMBER, agentTwiml);
-    console.log('Agent call initiated:', agentCall.sid);
+    activeConference = confName;
 
-    res.json({ leadCallSid: leadCall.sid, agentCallSid: agentCall.sid, confName });
+    res.json({ leadCallSid: leadCall.sid, confName });
   } catch (err) {
     console.error('Initiate error:', err.message);
     res.status(500).json({ error: err.message || 'Failed to initiate call' });
@@ -58,6 +65,7 @@ router.post('/initiate', async (req, res) => {
 router.post('/hangup', async (req, res) => {
   try {
     const { callSid } = req.body;
+    activeConference = null;
     if (!callSid) return res.json({ ok: true });
     const { SIGNALWIRE_PROJECT_ID } = process.env;
     await swFetch(
