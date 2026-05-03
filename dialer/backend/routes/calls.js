@@ -4,37 +4,54 @@ import { updateLead } from '../lib/sheets.js';
 
 const router = Router();
 
+function swFetch(path, method, body, contentType = 'application/json') {
+  const { SIGNALWIRE_PROJECT_ID, SIGNALWIRE_API_TOKEN, SIGNALWIRE_SPACE_URL } = process.env;
+  const credentials = Buffer.from(`${SIGNALWIRE_PROJECT_ID}:${SIGNALWIRE_API_TOKEN}`).toString('base64');
+  return fetch(`https://${SIGNALWIRE_SPACE_URL}${path}`, {
+    method,
+    headers: { 'Authorization': `Basic ${credentials}`, 'Content-Type': contentType },
+    body: contentType === 'application/json' ? JSON.stringify(body) : body.toString(),
+  });
+}
+
+async function restCall(to, from, twiml) {
+  const { SIGNALWIRE_PROJECT_ID } = process.env;
+  const params = new URLSearchParams({ To: to.replace(/\s+/g, ''), From: from, Twiml: twiml });
+  const r = await swFetch(
+    `/api/laml/2010-04-01/Accounts/${SIGNALWIRE_PROJECT_ID}/Calls.json`,
+    'POST', params, 'application/x-www-form-urlencoded'
+  );
+  if (!r.ok) {
+    const t = await r.text();
+    throw new Error(`Call to ${to} failed: ${r.status} ${t}`);
+  }
+  return r.json();
+}
+
 router.post('/initiate', async (req, res) => {
   try {
-    const { to } = req.body;
-    const { SIGNALWIRE_PROJECT_ID, SIGNALWIRE_API_TOKEN, SIGNALWIRE_SPACE_URL, SIGNALWIRE_PHONE_NUMBER } = process.env;
-    const credentials = Buffer.from(`${SIGNALWIRE_PROJECT_ID}:${SIGNALWIRE_API_TOKEN}`).toString('base64');
+    const { to, agentPhone } = req.body;
+    const { SIGNALWIRE_PHONE_NUMBER } = process.env;
+    const confName = `dialer-${Date.now()}`;
 
-    const toNormalized = to.replace(/\s+/g, '');
-    const twiml = '<Response><Pause length="60"/></Response>';
-    const params = new URLSearchParams({ To: toNormalized, From: SIGNALWIRE_PHONE_NUMBER, Twiml: twiml });
+    // Lead joins the conference but waits (startConferenceOnEnter=false) — hears hold music
+    const leadTwiml = `<Response><Dial><Conference beep="false" startConferenceOnEnter="false" endConferenceOnExit="false">${confName}</Conference></Dial></Response>`;
 
-    const response = await fetch(
-      `https://${SIGNALWIRE_SPACE_URL}/api/laml/2010-04-01/Accounts/${SIGNALWIRE_PROJECT_ID}/Calls.json`,
-      {
-        method: 'POST',
-        headers: { 'Authorization': `Basic ${credentials}`, 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: params.toString(),
-      }
-    );
+    // Agent joins and starts the conference; conference ends when agent hangs up
+    const agentTwiml = `<Response><Dial><Conference beep="false" startConferenceOnEnter="true" endConferenceOnExit="true">${confName}</Conference></Dial></Response>`;
 
-    if (!response.ok) {
-      const text = await response.text();
-      console.error('Call initiate error:', response.status, text);
-      return res.status(500).json({ error: 'Failed to initiate call' });
-    }
+    // Call lead first so their phone rings while agent is being connected
+    const leadCall = await restCall(to, SIGNALWIRE_PHONE_NUMBER, leadTwiml);
+    console.log('Lead call initiated:', leadCall.sid);
 
-    const data = await response.json();
-    console.log('Call initiated:', data.sid, data.status);
-    res.json({ callSid: data.sid, status: data.status });
+    // Call agent's phone
+    const agentCall = await restCall(agentPhone, SIGNALWIRE_PHONE_NUMBER, agentTwiml);
+    console.log('Agent call initiated:', agentCall.sid);
+
+    res.json({ leadCallSid: leadCall.sid, agentCallSid: agentCall.sid, confName });
   } catch (err) {
-    console.error('Call initiate error:', err);
-    res.status(500).json({ error: 'Failed to initiate call' });
+    console.error('Initiate error:', err.message);
+    res.status(500).json({ error: err.message || 'Failed to initiate call' });
   }
 });
 
@@ -42,19 +59,11 @@ router.post('/hangup', async (req, res) => {
   try {
     const { callSid } = req.body;
     if (!callSid) return res.json({ ok: true });
-
-    const { SIGNALWIRE_PROJECT_ID, SIGNALWIRE_API_TOKEN, SIGNALWIRE_SPACE_URL } = process.env;
-    const credentials = Buffer.from(`${SIGNALWIRE_PROJECT_ID}:${SIGNALWIRE_API_TOKEN}`).toString('base64');
-
-    await fetch(
-      `https://${SIGNALWIRE_SPACE_URL}/api/laml/2010-04-01/Accounts/${SIGNALWIRE_PROJECT_ID}/Calls/${callSid}.json`,
-      {
-        method: 'POST',
-        headers: { 'Authorization': `Basic ${credentials}`, 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ Status: 'completed' }).toString(),
-      }
+    const { SIGNALWIRE_PROJECT_ID } = process.env;
+    await swFetch(
+      `/api/laml/2010-04-01/Accounts/${SIGNALWIRE_PROJECT_ID}/Calls/${callSid}.json`,
+      'POST', new URLSearchParams({ Status: 'completed' }), 'application/x-www-form-urlencoded'
     );
-
     res.json({ ok: true });
   } catch (err) {
     console.error('Hangup error:', err);
@@ -69,7 +78,6 @@ router.get('/', async (_req, res) => {
       .select('*')
       .order('called_at', { ascending: false })
       .limit(20);
-
     if (error) throw error;
     res.json(data);
   } catch (err) {
@@ -80,23 +88,18 @@ router.get('/', async (_req, res) => {
 
 router.post('/', async (req, res) => {
   try {
-    const { leadName, phone, durationSeconds, status, notes, rowIndex } = req.body;
-
+    const { leadName, phone, durationSeconds, status, notes, rowIndex, sheetName } = req.body;
     const { data, error } = await supabase
       .from('calls')
       .insert({ lead_name: leadName, phone, duration_seconds: durationSeconds, status, notes })
       .select()
       .single();
-
     if (error) throw error;
-
-    // Update the Google Sheet row if rowIndex is provided
     if (rowIndex) {
-      await updateLead(rowIndex, status, notes).catch(err =>
+      await updateLead(rowIndex, status, notes, sheetName).catch(err =>
         console.error('Sheet update error (non-fatal):', err)
       );
     }
-
     res.json(data);
   } catch (err) {
     console.error('Call log error:', err);

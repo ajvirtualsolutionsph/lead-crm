@@ -13,17 +13,23 @@ function formatDuration(secs) {
 export default function Dialer({ sw, selectedLead, onCallLogged, leads, setSelectedLead, transcript, interimText }) {
   const { status, callDuration, isMuted, makeCall, hangUp, toggleMute } = sw;
   const [number, setNumber] = useState('');
+  const [agentPhone, setAgentPhone] = useState(() => localStorage.getItem('agentPhone') || '');
   const [outcome, setOutcome] = useState('Answered');
   const [notes, setNotes] = useState('');
   const [showOutcome, setShowOutcome] = useState(false);
   const [lastDuration, setLastDuration] = useState(0);
+
+  function handleAgentPhoneChange(e) {
+    setAgentPhone(e.target.value);
+    localStorage.setItem('agentPhone', e.target.value);
+  }
 
   useEffect(() => {
     if (selectedLead) setNumber(selectedLead.phone);
   }, [selectedLead]);
 
   useEffect(() => {
-    if (status === 'idle' && lastDuration > 0) {
+    if (status === 'ready' && lastDuration > 0 && !showOutcome) {
       setShowOutcome(true);
     }
   }, [status]);
@@ -43,7 +49,7 @@ export default function Dialer({ sw, selectedLead, onCallLogged, leads, setSelec
     setShowOutcome(false);
     setNotes('');
     setLastDuration(0);
-    makeCall(number);
+    makeCall(number, agentPhone);
   }
 
   function handleHangUp() {
@@ -84,6 +90,21 @@ export default function Dialer({ sw, selectedLead, onCallLogged, leads, setSelec
     <div style={{ padding: 20, background: T.panelBg, borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
       <h2 style={{ margin: '0 0 16px', fontSize: 18, color: T.textPrimary }}>Dialer</h2>
 
+      {/* Agent phone — saved to localStorage */}
+      <div style={{ marginBottom: 12 }}>
+        <label style={{ fontSize: 11, color: T.textMuted, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>
+          Your phone (receives the call)
+        </label>
+        <input
+          type="tel"
+          value={agentPhone}
+          onChange={handleAgentPhoneChange}
+          placeholder="+63XXXXXXXXXX"
+          disabled={isActive}
+          style={{ width: '100%', padding: '8px 12px', fontSize: 15, border: `1px solid ${T.borderStrong}`, borderRadius: 6, boxSizing: 'border-box', background: T.inputBg, color: T.textPrimary }}
+        />
+      </div>
+
       {/* Number input */}
       <input
         type="tel"
@@ -113,10 +134,11 @@ export default function Dialer({ sw, selectedLead, onCallLogged, leads, setSelec
         {!isActive && (
           <button
             onClick={handleCall}
-            disabled={!number || !isReady}
-            style={{ flex: 1, padding: 14, background: T.callGreen, color: T.textInverted, border: 'none', borderRadius: 6, fontSize: 16, cursor: !number || !isReady ? 'not-allowed' : 'pointer', opacity: !number || !isReady ? 0.6 : 1 }}
+            disabled={!number || !agentPhone || !isReady}
+            title={!agentPhone ? 'Enter your phone number above first' : ''}
+            style={{ flex: 1, padding: 14, background: T.callGreen, color: T.textInverted, border: 'none', borderRadius: 6, fontSize: 16, cursor: !number || !agentPhone || !isReady ? 'not-allowed' : 'pointer', opacity: !number || !agentPhone || !isReady ? 0.6 : 1 }}
           >
-            Call
+            {!agentPhone ? 'Enter your phone above' : 'Call'}
           </button>
         )}
         {isActive && (

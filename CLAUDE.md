@@ -23,19 +23,22 @@ dialer/
         └── hooks/        useSignalWire.js, useLeads.js
 ```
 
-## Call Architecture — REST mode (current)
-- `useSignalWire.js` uses REST only — no WebSocket/SDK needed
-- Call flow: `POST /api/calls/initiate` → SignalWire LaML REST API → target phone rings
-- Hang up: `POST /api/calls/hangup` with callSid → SignalWire cancels call
+## Call Architecture — PSTN Conference Bridge (current)
+- No WebRTC in browser — pure REST + LaML conference
+- Call flow: `POST /api/calls/initiate { to, agentPhone }` → backend creates LaML conference → calls lead AND agent's phone → both bridged
+- Lead TwiML: `<Conference startConferenceOnEnter="false">` — lead hears hold music until agent joins
+- Agent TwiML: `<Conference startConferenceOnEnter="true" endConferenceOnExit="true">` — conference starts when agent picks up; ends when agent hangs up
+- Hang up: `POST /api/calls/hangup` called twice (lead SID + agent SID) via `Promise.all`
 - Status starts `'ready'` immediately on page load
-- **Blocked by**: SignalWire trial restrictions — upgrade account to call any US number
-- **Upgrade path**: add WebRTC back once SignalWire account is funded (see Later section)
+- Agent phone stored in `localStorage` — entered once in the "Your phone" field in the Dialer UI
+- **Why not WebRTC**: UDP ports to SignalWire media servers blocked from Philippines ISP → ICE connectivity check times out. `<Connect><Room>` Video.RoomSession approach tried but browser WebRTC audio couldn't establish.
 
-## SDK Architecture — WebRTC mode (paused, needs funded account)
-- Token: `POST /api/fabric/subscribers/tokens` with `{ reference: 'dialer-agent' }`
-- Frontend: `SignalWire({ token, host })` from `@signalwire/js` v3 (Call Fabric)
-- Call flow: `client.dial({ to, from, audio: true })` → `call.start()` / `call.end()`
-- Blocked by: subscriber token creation requires account balance (SMS verification fee)
+## WebRTC investigation history (session 3)
+1. Tried `client.dial({ to: phoneNumber })` via Call Fabric subscriber token — "Invalid RTCPeer ID", dial address format wrong
+2. Tried `Video.RoomSession` + `<Connect><Room>` TwiML — PSTN leg worked (call lasted 24s), browser ICE timed out (UDP blocked)
+3. Microphone permission fix: must call `getUserMedia()` before `SignalWire()` init
+4. Root cause: Philippines ISP blocks UDP; TURN relay candidates not gathered by `Video.RoomSession`
+5. Solution: PSTN conference bridge — no browser audio needed
 
 ## Backend .env
 ```
@@ -115,17 +118,21 @@ create table calls (
 - [x] `getLeads(sheetName)` / `updateLead(..., sheetName)` — sheet-aware reads and writes
 - [x] Dark mode UI — `#152238` navy palette, cyan `#38bdf8` accent, all components themed via `src/theme.js`
 - [x] Live call transcription — Web Speech API captures agent's mic in real time; transcript pre-fills notes on hang-up
-- [x] Switched to REST-mode calling — `POST /calls/initiate` + `POST /calls/hangup` via SignalWire LaML API
 - [x] Status bar now shows accurate states: `initializing → ready → connecting → in-call → error`
 - [x] Call button disabled until client ready; silent failure fixed with proper error display
+- [x] SignalWire account topped up (trial removed) — can now call any US number
+- [x] Switched to PSTN conference bridge — `POST /calls/initiate { to, agentPhone }` calls both agent + lead, bridges via LaML `<Conference>`
+- [x] Agent phone field added to Dialer UI — saved to localStorage, required before Call button enables
+- [x] Fixed call outcome form — was checking `status === 'idle'` (never fired), now correctly `status === 'ready'`
+- [x] Hang up cancels both call legs simultaneously via `Promise.all`
 
 ### 🔲 Next Session
-- [ ] **Upgrade SignalWire account from trial** — removes restriction on calling unverified numbers
-- [ ] **Test an actual call to a US lead** — click lead, hit Call, verify target phone rings, log outcome
-- [ ] **Restore WebRTC audio** — switch back from REST mode once account is funded (fund account → subscriber token works → re-enable `@signalwire/js` client)
+- [ ] **Test two-legged call end-to-end** — enter agent's PH mobile, click a lead, verify both phones ring and audio is clear
+- [ ] **Log a completed call** — fill outcome form, save, verify Supabase row + Google Sheet update
+- [ ] **Deploy backend to Render**
+- [ ] **Deploy frontend to Vercel**
+- [ ] Set `VITE_BACKEND_URL` to Render URL after deploy
 
 ### 🔲 Later
-- [ ] Deploy backend to Render
-- [ ] Deploy frontend to Vercel
-- [ ] Set `VITE_BACKEND_URL` to Render URL after deploy
 - [ ] End-to-end test on deployed URLs
+- [ ] Investigate WebRTC audio for browser-based calling (requires TURN relay or different ISP)
