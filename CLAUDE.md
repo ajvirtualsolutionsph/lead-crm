@@ -125,14 +125,16 @@ create table calls (
 - [x] Agent phone field added to Dialer UI — saved to localStorage, required before Call button enables
 - [x] Fixed call outcome form — was checking `status === 'idle'` (never fired), now correctly `status === 'ready'`
 - [x] Hang up cancels both call legs simultaneously via `Promise.all`
+- [x] Fixed `sheetName` not passed on call save — now uses `selectedLead.sheet`
+- [x] Backend deployed to Render — https://phone-dialer-shl2.onrender.com
+- [x] Frontend deployed to Vercel — https://phone-dialer-six.vercel.app
+- [x] Fixed production API calls — axios `baseURL` set from `VITE_BACKEND_URL` (Vite proxy only works in dev)
+- [x] CORS wired up — `FRONTEND_URL` set to Vercel URL in Render env vars
 
 ### 🔲 Next Session
-- [ ] **Test two-legged call end-to-end** — enter agent's PH mobile, click a lead, verify both phones ring and audio is clear
-- [ ] **Log a completed call** — fill outcome form, save, verify Supabase row + Google Sheet update
-- [ ] **Deploy backend to Render**
-- [ ] **Deploy frontend to Vercel**
-- [ ] Set `VITE_BACKEND_URL` to Render URL after deploy
+- [ ] **Wait for SignalWire support** to enable international dialing, then enable Philippines (+63) in Geographic Permissions
+- [ ] **Test two-legged call end-to-end** on live URLs — enter PH mobile, click a lead, verify both phones ring
+- [ ] **Log a completed call** — fill outcome form, save, verify Supabase row + Google Sheet cols V/W update
 
 ### 🔲 Later
-- [ ] End-to-end test on deployed URLs
 - [ ] Investigate WebRTC audio for browser-based calling (requires TURN relay or different ISP)
