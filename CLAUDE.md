@@ -143,6 +143,7 @@ create table calls (
 - [x] `initDialerColumns()` added — writes `dialer_notes` header to X1 on all 4 tabs at backend startup
 - [x] Grid expanded to 24 columns on all 4 sheet tabs (was 23/A–W)
 - [x] GitHub repo made public — https://github.com/ajvirtualsolutionsph/phone-dialer (.env never committed, safe)
+- [x] UptimeRobot monitor set up — pings `https://phone-dialer-shl2.onrender.com/health` every 5 min, keeps Render awake 24/7 (session 7)
 
 ## Agent workflow (session 6)
 - Agent joins calls by dialing **+12525303318** via **Viber Out** from their PH phone (Viber Out → US number, no UDP block)
