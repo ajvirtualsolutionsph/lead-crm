@@ -25,7 +25,17 @@ export default function CallLog({ refreshKey }) {
 
   return (
     <div style={{ padding: 20, background: T.panelBg, borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.4)', marginTop: 16 }}>
-      <h2 style={{ margin: '0 0 12px', fontSize: 18, color: T.textPrimary }}>Recent Calls</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+        <h2 style={{ margin: 0, fontSize: 18, color: T.textPrimary }}>Recent Calls</h2>
+        {calls.length > 0 && (
+          <button
+            onClick={() => setCalls([])}
+            style={{ padding: '4px 10px', fontSize: 12, background: 'transparent', border: `1px solid ${T.borderStrong}`, borderRadius: 4, color: T.textMuted, cursor: 'pointer' }}
+          >
+            Clear
+          </button>
+        )}
+      </div>
       {calls.length === 0 ? (
         <p style={{ color: T.textMuted, fontSize: 13 }}>No calls yet.</p>
       ) : (
