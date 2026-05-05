@@ -100,7 +100,6 @@ router.post('/initiate', async (req, res) => {
     const extra = { Timeout: '25' };
     if (backendUrl) {
       extra.StatusCallback = `${backendUrl}/calls/status-callback`;
-      extra.StatusCallbackEvent = 'initiated ringing answered completed';
       extra.StatusCallbackMethod = 'POST';
       extra.MachineDetection = 'Enable';
     } else {
