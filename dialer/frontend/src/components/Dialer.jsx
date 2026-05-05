@@ -26,6 +26,7 @@ export default function Dialer({ sw, selectedLead, onCallLogged, leads, setSelec
   const [showOutcome, setShowOutcome] = useState(false);
   const [lastDuration, setLastDuration] = useState(0);
   const [autoToast, setAutoToast] = useState(null);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (selectedLead) setNumber(selectedLead.phone);
@@ -83,6 +84,8 @@ export default function Dialer({ sw, selectedLead, onCallLogged, leads, setSelec
   }
 
   async function handleSaveAndNext() {
+    if (saving) return;
+    setSaving(true);
     try {
       await axios.post('/calls', {
         leadName: selectedLead?.name || '',
@@ -95,6 +98,8 @@ export default function Dialer({ sw, selectedLead, onCallLogged, leads, setSelec
       });
     } catch (err) {
       console.error('Failed to log call:', err);
+    } finally {
+      setSaving(false);
     }
 
     setShowOutcome(false);
@@ -269,9 +274,10 @@ export default function Dialer({ sw, selectedLead, onCallLogged, leads, setSelec
           />
           <button
             onClick={handleSaveAndNext}
-            style={{ width: '100%', padding: 10, background: T.saveBlue, color: T.textInverted, border: 'none', borderRadius: 6, fontSize: 14, cursor: 'pointer' }}
+            disabled={saving}
+            style={{ width: '100%', padding: 10, background: T.saveBlue, color: T.textInverted, border: 'none', borderRadius: 6, fontSize: 14, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.6 : 1 }}
           >
-            Save &amp; next lead
+            {saving ? 'Saving…' : 'Save & next lead'}
           </button>
         </div>
       )}
