@@ -70,11 +70,12 @@ async function autoLog(status, notes) {
   }
 }
 
-function clearCallState() {
+function clearCallState(preserveDisposition = false) {
+  const disp = preserveDisposition ? callState.disposition : null;
   callState = {
     confName: null, leadCallSid: null, leadPhone: null,
     leadName: null, rowIndex: null, sheetName: null,
-    disposition: null, startedAt: null,
+    disposition: disp, startedAt: null,
   };
 }
 
@@ -137,32 +138,32 @@ router.post('/status-callback', async (req, res) => {
 
   console.log(`[StatusCallback] SID=${CallSid} Status=${CallStatus} AnsweredBy=${AnsweredBy}`);
 
-  if (AnsweredBy === 'machine_start' || AnsweredBy === 'machine_end_silence' || AnsweredBy === 'machine_end_other') {
+  if (AnsweredBy === 'machine_start' || AnsweredBy === 'machine_end_silence' || AnsweredBy === 'machine_end_other' || AnsweredBy === 'machine_end_beep') {
     callState.disposition = 'voicemail';
     await autoHangup(CallSid);
     await autoLog('Voicemail', 'AMD: voicemail detected — auto-hung up');
-    clearCallState();
+    clearCallState(true);
     return;
   }
 
   if (CallStatus === 'no-answer') {
     callState.disposition = 'no-answer';
     await autoLog('No Answer', 'Ring timeout — no answer');
-    clearCallState();
+    clearCallState(true);
     return;
   }
 
   if (CallStatus === 'busy') {
     callState.disposition = 'busy';
     await autoLog('Busy', 'Lead line was busy');
-    clearCallState();
+    clearCallState(true);
     return;
   }
 
   if (CallStatus === 'failed' || CallStatus === 'canceled') {
     callState.disposition = 'failed';
     await autoLog('Failed', `Call ${CallStatus}`);
-    clearCallState();
+    clearCallState(true);
     return;
   }
 
@@ -178,11 +179,16 @@ router.post('/status-callback', async (req, res) => {
 
 // Frontend polls this while in-call to detect auto-terminated calls
 router.get('/status', (req, res) => {
-  res.json({
+  const response = {
     active: callState.confName !== null,
     disposition: callState.disposition,
     elapsedSeconds: callState.startedAt ? Math.floor((Date.now() - callState.startedAt) / 1000) : 0,
-  });
+  };
+  // Clear disposition after delivering it so next poll is clean
+  if (!response.active && response.disposition) {
+    callState.disposition = null;
+  }
+  res.json(response);
 });
 
 router.post('/hangup', async (req, res) => {
