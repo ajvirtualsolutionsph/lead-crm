@@ -154,6 +154,13 @@ create table calls (
 - [x] `GET /calls/status` polling — frontend polls every 3s, shows toast and auto-advances to next lead on auto-terminated calls (session 8)
 - [x] `callState` object replaces bare `activeConference` — tracks leadName, rowIndex, sheetName, disposition, startedAt for auto-logging (session 8)
 - [x] Memory system built out — 6 memory files covering status, architecture decisions, agent workflow, deployment, future ideas (session 8)
+- [x] **Ring timeout verified** — 25s auto-terminates, "No Answer" auto-logged to Supabase + Sheets, toast shown, dialer advances to next lead (session 9)
+- [x] **Full real call verified** — two-way audio confirmed (Sawa Restaurant & Grill), live transcription captured, outcome form saved correctly (session 9)
+- [x] Fixed `MachineDetectionTimeout` and `StatusCallbackEvent` params — not supported by SignalWire compat API (session 9)
+- [x] Fixed `clearCallState` to preserve disposition so frontend polling can react to auto-terminated calls (session 9)
+- [x] Added `machine_end_beep` to AMD voicemail detection check (session 9)
+- [x] Fixed duplicate Supabase entries — "Save & next lead" button now disabled while saving (session 9)
+- [x] Added "Clear" button to Recent Calls list — clears display for session, data stays in Supabase (session 9)
 
 ## Agent workflow (session 6)
 - Agent joins calls by dialing **+12525303318** via **Viber Out** from their PH phone (Viber Out → US number, no UDP block)
@@ -161,9 +168,8 @@ create table calls (
 - West Coast leads require midnight+ PHT — target East Coast first
 
 ### 🔲 Next Session
-- [ ] **Test ring timeout** — call a non-answering number, confirm auto-terminates in ~25s and logs "No Answer" to Supabase + Sheets without agent clicks
-- [ ] **Test AMD** — call a Google Voice number (has voicemail), confirm "Voicemail" logged within 5s and call hangs up
-- [ ] **Test with a real lead** — full flow: click lead → Call → dial +12525303318 via Viber Out → talk → hang up → fill outcome form → verify Supabase + Sheets
+- [ ] **Test AMD** — call a number that goes to voicemail, confirm "Voicemail" logged within 5s and call hangs up (skipped session 9 — no voicemail number available)
+- [ ] **Real dialing session** — work through actual leads, verify No Answer / Answered / Busy all log correctly at scale
 - [ ] **GitHub profile** — add repo descriptions, topics, and profile README (gh CLI not installed; do via GitHub web UI)
 - [ ] **Optional**: when SignalWire support enables +63 dialing, agent can receive calls directly instead of dialing in
 
