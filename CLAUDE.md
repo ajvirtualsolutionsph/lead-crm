@@ -25,14 +25,18 @@ dialer/
 
 ## Call Architecture — Agent-Calls-In Conference Bridge (current)
 - No WebRTC in browser — pure REST + LaML conference
-- Call flow: `POST /api/calls/initiate { to }` → backend dials lead only → lead hears hold music → agent dials +12525303318 from their phone → both bridged
+- Call flow: `POST /api/calls/initiate { to, leadName, rowIndex, sheetName }` → backend dials lead only → lead hears hold music → agent dials +12525303318 from their phone → both bridged
 - Lead TwiML: `<Conference startConferenceOnEnter="false" endConferenceOnExit="true">` — lead hears hold music until agent joins
 - Agent TwiML: `<Conference startConferenceOnEnter="true" endConferenceOnExit="true">` — served via `POST /calls/inbound` webhook when agent calls in
-- Hang up: `POST /api/calls/hangup { callSid: leadCallSid }` — clears activeConference state
+- Hang up: `POST /api/calls/hangup { callSid: leadCallSid }` — clears `callState`
 - Status starts `'ready'` immediately on page load
 - No "Your phone" field — agent always dials +12525303318 to join
-- `activeConference` stored in memory on backend — single-agent dialer, one call at a time
+- `callState` object stored in memory on backend (confName, leadCallSid, leadPhone, leadName, rowIndex, sheetName, disposition, startedAt) — single-agent dialer, one call at a time
 - Backend auto-configures SignalWire inbound webhook on startup via `RENDER_EXTERNAL_URL`
+- **Ring timeout**: `Timeout: '25'` on outbound call — SignalWire auto-terminates if lead doesn't answer in 25s
+- **Answering Machine Detection**: `MachineDetection: 'Enable'` — voicemail detected in 3–5s, call auto-hung up immediately
+- **StatusCallback**: `POST /calls/status-callback` — auto-logs No Answer / Busy / Voicemail / Failed to Supabase + Sheets without agent clicks
+- **Status polling**: `GET /calls/status` — frontend polls every 3s while in-call; on auto-termination, shows toast and skips to next lead
 - **Why agent-calls-in**: SignalWire international dialing to +63 blocked by default; agent calling a US number works from any phone via regular call or VoIP app
 - **Why not WebRTC**: UDP ports to SignalWire media servers blocked from Philippines ISP → ICE connectivity check times out.
 
@@ -144,6 +148,12 @@ create table calls (
 - [x] Grid expanded to 24 columns on all 4 sheet tabs (was 23/A–W)
 - [x] GitHub repo made public — https://github.com/ajvirtualsolutionsph/phone-dialer (.env never committed, safe)
 - [x] UptimeRobot monitor set up — pings `https://phone-dialer-shl2.onrender.com/health` every 5 min, keeps Render awake 24/7 (session 7)
+- [x] Ring timeout added — `Timeout: '25'` on outbound call; auto-terminates if lead doesn't answer (session 8)
+- [x] Answering Machine Detection — `MachineDetection: 'Enable'`; voicemail detected in 3–5s, auto-hung up (session 8)
+- [x] `POST /calls/status-callback` — auto-logs No Answer / Busy / Voicemail / Failed to Supabase + Sheets; zero agent clicks (session 8)
+- [x] `GET /calls/status` polling — frontend polls every 3s, shows toast and auto-advances to next lead on auto-terminated calls (session 8)
+- [x] `callState` object replaces bare `activeConference` — tracks leadName, rowIndex, sheetName, disposition, startedAt for auto-logging (session 8)
+- [x] Memory system built out — 6 memory files covering status, architecture decisions, agent workflow, deployment, future ideas (session 8)
 
 ## Agent workflow (session 6)
 - Agent joins calls by dialing **+12525303318** via **Viber Out** from their PH phone (Viber Out → US number, no UDP block)
@@ -151,8 +161,9 @@ create table calls (
 - West Coast leads require midnight+ PHT — target East Coast first
 
 ### 🔲 Next Session
-- [ ] **Test with a real lead** — click a lead from the sidebar, click Call, dial +12525303318 via Viber Out to join
-- [ ] **Log a completed real call** — fill outcome form, verify Supabase row + Google Sheet cols V/W/X update
+- [ ] **Test ring timeout** — call a non-answering number, confirm auto-terminates in ~25s and logs "No Answer" to Supabase + Sheets without agent clicks
+- [ ] **Test AMD** — call a Google Voice number (has voicemail), confirm "Voicemail" logged within 5s and call hangs up
+- [ ] **Test with a real lead** — full flow: click lead → Call → dial +12525303318 via Viber Out → talk → hang up → fill outcome form → verify Supabase + Sheets
 - [ ] **GitHub profile** — add repo descriptions, topics, and profile README (gh CLI not installed; do via GitHub web UI)
 - [ ] **Optional**: when SignalWire support enables +63 dialing, agent can receive calls directly instead of dialing in
 
