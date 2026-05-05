@@ -7,9 +7,11 @@ export function useSignalWire() {
   const [isMuted, setIsMuted] = useState(false);
   const [transcript, setTranscript] = useState([]);
   const [interimText, setInterimText] = useState('');
+  const [serverDisposition, setServerDisposition] = useState(null);
   const leadCallSidRef = useRef(null);
   const timerRef = useRef(null);
   const recognitionRef = useRef(null);
+  const pollRef = useRef(null);
 
   function startTimer() {
     setCallDuration(0);
@@ -61,19 +63,49 @@ export function useSignalWire() {
     setInterimText('');
   }
 
-  const makeCall = useCallback(async (phoneNumber) => {
+  function startPolling() {
+    pollRef.current = setInterval(async () => {
+      try {
+        const { data } = await axios.get('/calls/status');
+        if (!data.active && data.disposition && data.disposition !== 'answered') {
+          stopPolling();
+          stopTimer();
+          stopTranscription();
+          leadCallSidRef.current = null;
+          setServerDisposition(data.disposition);
+          setStatus('ready');
+        }
+      } catch (e) {
+        console.warn('Status poll error:', e.message);
+      }
+    }, 3000);
+  }
+
+  function stopPolling() {
+    clearInterval(pollRef.current);
+    pollRef.current = null;
+  }
+
+  const makeCall = useCallback(async (phoneNumber, leadMeta = {}) => {
     if (!phoneNumber) return;
     try {
       setStatus('connecting');
       setIsMuted(false);
       setTranscript([]);
       setInterimText('');
+      setServerDisposition(null);
 
-      const { data } = await axios.post('/calls/initiate', { to: phoneNumber });
+      const { data } = await axios.post('/calls/initiate', {
+        to: phoneNumber,
+        leadName: leadMeta.leadName || '',
+        rowIndex: leadMeta.rowIndex || null,
+        sheetName: leadMeta.sheetName || 'No Reply/Declined',
+      });
       leadCallSidRef.current = data.leadCallSid;
       setStatus('in-call');
       startTimer();
       startTranscription();
+      startPolling();
     } catch (err) {
       console.error('Call error:', err.response?.data || err.message);
       setStatus('error');
@@ -81,6 +113,7 @@ export function useSignalWire() {
   }, []);
 
   const hangUp = useCallback(async () => {
+    stopPolling();
     stopTimer();
     stopTranscription();
     const sid = leadCallSidRef.current;
@@ -98,5 +131,11 @@ export function useSignalWire() {
     setInterimText('');
   }, []);
 
-  return { status, callDuration, isMuted, makeCall, hangUp, toggleMute, transcript, interimText, clearTranscript };
+  const clearDisposition = useCallback(() => setServerDisposition(null), []);
+
+  return {
+    status, callDuration, isMuted, makeCall, hangUp, toggleMute,
+    transcript, interimText, clearTranscript,
+    serverDisposition, clearDisposition,
+  };
 }

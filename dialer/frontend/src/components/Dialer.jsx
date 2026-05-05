@@ -11,13 +11,21 @@ function formatDuration(secs) {
   return `${m}:${s}`;
 }
 
+const DISPOSITION_LABELS = {
+  'no-answer': 'No Answer — auto-logged',
+  'busy':      'Busy — auto-logged',
+  'failed':    'Call failed — auto-logged',
+  'voicemail': 'Voicemail detected — auto-logged',
+};
+
 export default function Dialer({ sw, selectedLead, onCallLogged, leads, setSelectedLead, transcript, interimText }) {
-  const { status, callDuration, isMuted, makeCall, hangUp, toggleMute } = sw;
+  const { status, callDuration, isMuted, makeCall, hangUp, toggleMute, serverDisposition, clearDisposition } = sw;
   const [number, setNumber] = useState('');
   const [outcome, setOutcome] = useState('Answered');
   const [notes, setNotes] = useState('');
   const [showOutcome, setShowOutcome] = useState(false);
   const [lastDuration, setLastDuration] = useState(0);
+  const [autoToast, setAutoToast] = useState(null);
 
   useEffect(() => {
     if (selectedLead) setNumber(selectedLead.phone);
@@ -28,6 +36,24 @@ export default function Dialer({ sw, selectedLead, onCallLogged, leads, setSelec
       setShowOutcome(true);
     }
   }, [status]);
+
+  useEffect(() => {
+    if (!serverDisposition || serverDisposition === 'answered') return;
+    // Don't set lastDuration — keeping it 0 prevents the status effect from showing the manual outcome form
+    setAutoToast(DISPOSITION_LABELS[serverDisposition] || 'Call ended');
+    clearDisposition();
+    onCallLogged();
+    const t = setTimeout(() => {
+      setAutoToast(null);
+      if (selectedLead && leads) {
+        const idx = leads.findIndex(l => l.rowIndex === selectedLead.rowIndex);
+        const next = leads[idx + 1];
+        if (next) setSelectedLead(next);
+      }
+    }, 1500);
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serverDisposition]);
 
   useEffect(() => {
     if (showOutcome && transcript && transcript.length > 0) {
@@ -43,7 +69,12 @@ export default function Dialer({ sw, selectedLead, onCallLogged, leads, setSelec
     setShowOutcome(false);
     setNotes('');
     setLastDuration(0);
-    makeCall(number);
+    setAutoToast(null);
+    makeCall(number, {
+      leadName: selectedLead?.name || '',
+      rowIndex: selectedLead?.rowIndex || null,
+      sheetName: selectedLead?.sheet || 'No Reply/Declined',
+    });
   }
 
   function handleHangUp() {
@@ -202,6 +233,17 @@ export default function Dialer({ sw, selectedLead, onCallLogged, leads, setSelec
             )}
           </div>
         </>
+      )}
+
+      {/* Auto-log toast — shown when call ended automatically (no-answer, busy, voicemail) */}
+      {autoToast && (
+        <div style={{
+          marginTop: 14, padding: '10px 14px',
+          background: '#1a2f1a', border: '1px solid #4ade80',
+          borderRadius: 6, color: '#4ade80', fontSize: 13, textAlign: 'center',
+        }}>
+          {autoToast}
+        </div>
       )}
 
       {/* Outcome form */}
