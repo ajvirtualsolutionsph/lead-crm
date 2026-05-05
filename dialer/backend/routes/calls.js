@@ -103,7 +103,6 @@ router.post('/initiate', async (req, res) => {
       extra.StatusCallbackEvent = 'initiated ringing answered completed';
       extra.StatusCallbackMethod = 'POST';
       extra.MachineDetection = 'Enable';
-      extra.MachineDetectionTimeout = '3000';
     } else {
       console.warn('[initiate] No RENDER_EXTERNAL_URL or BACKEND_URL set — StatusCallback and AMD disabled');
     }
