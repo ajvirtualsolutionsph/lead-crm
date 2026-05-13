@@ -161,6 +161,8 @@ create table calls (
 - [x] Added `machine_end_beep` to AMD voicemail detection check (session 9)
 - [x] Fixed duplicate Supabase entries — "Save & next lead" button now disabled while saving (session 9)
 - [x] Added "Clear" button to Recent Calls list — clears display for session, data stays in Supabase (session 9)
+- [x] Wake-up ping on page load — `axios.get('/health')` fires silently on app load to warm Render before first call (session 10)
+- [x] Increased `/calls/initiate` axios timeout to 30s — prevents ERR_TIMED_OUT on slow Render cold starts (session 10)
 
 ## Agent workflow (session 6)
 - Agent joins calls by dialing **+12525303318** via **Viber Out** from their PH phone (Viber Out → US number, no UDP block)
@@ -170,6 +172,7 @@ create table calls (
 ### 🔲 Next Session
 - [ ] **Test AMD** — call a number that goes to voicemail, confirm "Voicemail" logged within 5s and call hangs up (skipped session 9 — no voicemail number available)
 - [ ] **Real dialing session** — work through actual leads, verify No Answer / Answered / Busy all log correctly at scale
+- [ ] **Change UptimeRobot ping interval to 1 min** — reduces cold start risk (currently 5 min; do via UptimeRobot dashboard)
 - [ ] **GitHub profile** — add repo descriptions, topics, and profile README (gh CLI not installed; do via GitHub web UI)
 - [ ] **Optional**: when SignalWire support enables +63 dialing, agent can receive calls directly instead of dialing in
 
