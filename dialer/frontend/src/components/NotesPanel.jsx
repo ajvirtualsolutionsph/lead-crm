@@ -8,61 +8,69 @@ const SCRIPT = [
 
 ⏸️ PAUSE. Wait for them to say "sure" or laugh. Don't skip the pause.
 
-"Appreciate it. So — I work with solo founders and small business owners who are still personally answering emails at 9pm and writing their own social posts on Sundays. I build them one AI system that runs the inbox, the lead follow-ups, and the marketing content — so the business stops depending on them being awake. Before I pitch anything though — is that even a real problem for you, or have you already got that handled?"`,
+"Appreciate it. So — I work with solo founders and small business owners who are still personally answering emails at 9pm and writing their own social posts on Sundays. I build them one AI system that runs the inbox, the lead follow-ups, and the marketing content — so the business stops depending on them being awake. Before I pitch anything though — is that even a real problem for you, or have you already got that handled?"
+
+Why This Works:
+• "22 seconds" is oddly specific — forces them to actually listen
+• "9pm emails" and "Sundays" are specific — they recognize themselves
+• "Business stops depending on them being awake" = the dream they rarely hear
+• Honesty disarms — removes their #1 objection before they raise it`,
   },
   {
     title: '🔍 QUALIFYING — 3 Questions Only (60–90s)',
     content: `"Mind if I ask three quick questions to see if this is even worth your time? Cool —"
 
-Q1 – PAIN: "What's eating the most hours in your week right now — is it inbox and admin stuff, chasing leads, or content and marketing?"
-→ "Honestly, all of it" = GREEN FLAG
+Q1 – PAIN DISCOVERY: "What's eating the most hours in your week right now — is it inbox and admin stuff, chasing leads, or content and marketing?"
+Listen for emotion. "Honestly, all of it" = GREEN FLAG
 
-Q2 – SETUP: "And right now, are you handling that yourself, or do you have a VA, an agency, or some tools doing it?"
-→ Has a VA = perfect upgrade target
+Q2 – CURRENT SETUP: "And right now, are you handling that yourself, or do you have a VA, an agency, or some tools doing it?"
+This tells you budget reality. Has a VA = perfect upgrade target
 
-Q3 – MONEY: "If a system handled even 70% of that for you — running on its own, no hand-holding — would that be a 'nice to have' or a 'thank god' moment?"
-→ "Thank god" or laugh = QUALIFIED → move to pitch`,
+Q3 – THE MONEY QUESTION: "If a system handled even 70% of that for you — running on its own, no hand-holding — would that be a 'nice to have' or a 'thank god' moment?"
+"Thank god" or laugh = QUALIFIED → Move to pitch`,
   },
   {
     title: '🎤 THE PITCH — Only if qualified (30s)',
     content: `"Okay, based on what you just told me — you're exactly who I built this for. Let me tell you what it actually is in 30 seconds, then I'll stop talking."
 
-"It's called the AI Admin & Marketing Agent. One system, two jobs. Admin side: triages your inbox, drafts replies in your voice, researches and qualifies leads, books calls to your calendar. Marketing side: generates content, schedules posts, tracks engagement so you stop guessing."
+"It's called the AI Admin & Marketing Agent. One system, two jobs. On the admin side: it triages your inbox, drafts your replies in your voice, researches and qualifies leads, and books calls straight to your calendar. On the marketing side: it generates content, schedules your posts, and tracks what's actually getting engagement so you stop guessing."
 
-Three things people are surprised by:
-1. One-time $2,000–$2,500. No subscription. You own it. Most break even before month two.
-2. You don't need to be technical. It runs in the background. Anyone can use it.
-3. I only take 4 builds a month — 3 slots left this month.
+"Three things people are usually surprised by:"
+1. One-time build around $2,000 to $2,500. No subscription. You own it. Compared to $58,000/yr hire for the admin piece alone, most break even before month two.
+2. You don't need to be technical. I build it to run in the background. Anyone can use it.
+3. I only take 4 builds a month, and I've got 3 slots left this month.
 
-"The way I figure out if it's a real fit is a 30-min Zoom — live demo, you ask whatever, you decide. No pressure pitch at the end."`,
+"The way I figure out if it's a real fit is a 30-minute Zoom — I show you a live demo of one already running, you ask whatever you want, and you decide. No pressure pitch at the end."`,
   },
   {
     title: '📅 SOFT CLOSE → BOOK',
-    content: `"Two ways we can do this — I can text or email you my Calendly link and you pick a slot, or I can read you a couple of times right now and we lock it in. Which is easier?"
+    content: `"Two ways we can do this — I can text or email you my Calendly link and you pick a slot, or I can read you a couple of times right now and we lock it in. Which is easier for you?"
 
-IF LINK: "Done. What's the best email? — Great, sending it now from aj.virtualsolutionsph@gmail.com. Book within 48 hours if you can, slots go fast."
+📌 Giving a choice between two yeses is more effective than "want to book?"
 
-IF TIMES: "I've got [Day] at [Time] or [Day] at [Time], both your timezone. Which works?" → Confirm → "Perfect. Calendar invite coming now."`,
+IF LINK: "Done. What's the best email? — Great, sending it now from aj.virtualsolutionsph@gmail.com. Quick favor: book within 48 hours if you can, slots go fast. And [Name] — if it's not a fit after the demo, just tell me. I'd rather hear no than chase a maybe."
+
+IF TIMES: "Cool — I've got [Day] at [Time] or [Day] at [Time], both your timezone. Which works?" → Confirm → "Perfect. Calendar invite coming now."`,
   },
   {
     title: '🟡 OBJECTIONS',
     content: `"I'm too small"
-→ "Backwards. Big companies have teams. You're doing all of it personally — you get the most hours back."
+→ "Honestly that's backwards. Big companies have teams to absorb busywork. You're the one doing all of it personally — which means you're the one who gets the most hours back."
 
 "Can't afford $2K"
-→ "50/50 payment, so $1K upfront. The lead-gen piece usually pays for the build. Walk you through that on the demo?"
+→ "Payment's 50/50, so $1K upfront. But if cash flow's the concern, the lead-gen piece usually pays for the build. Want me to walk you through that on the demo?"
 
 "Already use ChatGPT"
-→ "Good — means you get the idea. Difference is you're prompting every time. What I build prompts itself. It reads, decides, drafts, and acts — without you opening anything."
+→ "Good — means you get the idea. The difference is you're prompting every time. What I build prompts itself. It reads, decides, drafts, and acts — without you opening anything."
 
 "Have a VA already"
-→ "Perfect — VA isn't going anywhere. System handles repetitive stuff so your VA does thinking work. Most clients run both together."
+→ "Perfect actually — your VA isn't going anywhere. The system handles repetitive stuff so your VA does thinking work. Most clients keep their VA and run the AI together."
 
 "Send me email"
-→ "Will do. Based on what you said about [Q1 answer] — should I send Admin, Marketing, or both? Sending within the hour with Calendly link." THEN ACTUALLY DO IT.`,
+→ "Will do. Quick thing — based on what you said about [reference Q1 answer], should I send Admin, Marketing, or both? Sending within the hour with Calendly link." THEN ACTUALLY DO IT.`,
   },
   {
-    title: '📋 PRE-CALL CHECKLIST',
+    title: '📋 PRE-CALL 60-SECOND CHECKLIST',
     content: `☐ Look at their website/social for 30 seconds — find ONE thing to reference
 ☐ Pull up Calendly link in a tab, ready to paste
 ☐ Have a notes doc open — capture Q1/Q2 answers for follow-up
@@ -70,16 +78,18 @@ IF TIMES: "I've got [Day] at [Time] or [Day] at [Time], both your timezone. Whic
   },
   {
     title: '🎯 DAILY TARGETS',
-    content: `Dials per day:         20–30
-Conversations:         5–8
-Qualified prospects:   2–3
-Demos booked (good day): 1`,
+    content: `Dials per day:            20–30
+Actual conversations:     5–8
+Qualified prospects:      2–3
+Demos booked (good day):  1`,
   },
   {
-    title: '⚡ PERSONALIZATION SWAPS',
-    content: `Agencies: "…handle the prospecting and follow-ups your account managers hate doing."
-E-commerce: "…replace the customer service and order admin work eating your team's afternoons."
-Coaches/consultants: "…handle inbox triage and discovery-call scheduling so you stop being your own assistant."
+    title: '⚡ QUICK PERSONALIZATION TIPS',
+    content: `Swap these in instead of the generic opener:
+
+For agencies: "I build AI systems that handle the prospecting and follow-ups your account managers hate doing."
+For e-commerce: "I build AI systems that replace the customer service and order admin work eating your team's afternoons."
+For coaches/consultants: "I build AI systems that handle inbox triage and discovery-call scheduling so you stop being your own assistant."
 
 Remember: You're not selling. You're qualifying. If they don't have the pain, move on.`,
   },
