@@ -178,17 +178,75 @@ export async function archiveNoAnswer() {
   const existingTitles = meta.data.sheets.map(s => s.properties.title);
 
   if (!existingTitles.includes(DEST_TAB)) {
-    await sheets.spreadsheets.batchUpdate({
+    const addRes = await sheets.spreadsheets.batchUpdate({
       spreadsheetId: SHEET_ID,
       requestBody: { requests: [{ addSheet: { properties: { title: DEST_TAB } } }] },
     });
+    const newSheetId = addRes.data.replies[0].addSheet.properties.sheetId;
+
+    // Write header row
     await sheets.spreadsheets.values.update({
       spreadsheetId: SHEET_ID,
       range: `'${DEST_TAB}'!A1`,
       valueInputOption: 'USER_ENTERED',
       requestBody: { values: [header] },
     });
-    console.log(`[archive] Created sheet "${DEST_TAB}"`);
+
+    // Apply same formatting as Ready for Call sheet
+    const blue  = { red: 0.067, green: 0.302, blue: 0.533 }; // #114D88 header blue
+    const white = { red: 1, green: 1, blue: 1 };
+    const bandLight = { red: 0.863, green: 0.902, blue: 0.953 }; // #DCE6F3 alternating band
+
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId: SHEET_ID,
+      requestBody: {
+        requests: [
+          // Freeze header row
+          {
+            updateSheetProperties: {
+              properties: { sheetId: newSheetId, gridProperties: { frozenRowCount: 1 } },
+              fields: 'gridProperties.frozenRowCount',
+            },
+          },
+          // Header: blue background + white bold text
+          {
+            repeatCell: {
+              range: { sheetId: newSheetId, startRowIndex: 0, endRowIndex: 1 },
+              cell: {
+                userEnteredFormat: {
+                  backgroundColor: blue,
+                  textFormat: { bold: true, foregroundColor: white },
+                  verticalAlignment: 'MIDDLE',
+                },
+              },
+              fields: 'userEnteredFormat(backgroundColor,textFormat,verticalAlignment)',
+            },
+          },
+          // Alternating row banding for data rows
+          {
+            addBanding: {
+              bandedRange: {
+                range: { sheetId: newSheetId, startRowIndex: 1 },
+                rowProperties: {
+                  firstBandColor: white,
+                  secondBandColor: bandLight,
+                },
+              },
+            },
+          },
+          // Compact row height: 21px for all rows
+          {
+            updateDimensionProperties: {
+              range: { sheetId: newSheetId, dimension: 'ROWS', startIndex: 0 },
+              properties: { pixelSize: 21 },
+              fields: 'pixelSize',
+            },
+          },
+        ],
+      },
+    });
+
+    console.log(`[archive] Created and formatted sheet "${DEST_TAB}"`);
   }
 
   // Append No Answer rows to Second Attempt
