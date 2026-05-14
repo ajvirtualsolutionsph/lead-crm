@@ -45,7 +45,18 @@ export async function getLeads(sheetName = 'No Reply/Declined') {
     notes: row[9] || '',
     status: row[21] || 'New',
     lastCalled: row[22] || '',
+    dialer_notes: row[23] || '',
   }));
+}
+
+export async function updateDialerNotes(rowIndex, notes, sheetName = 'No Reply/Declined') {
+  await sheets.spreadsheets.values.batchUpdate({
+    spreadsheetId: SHEET_ID,
+    requestBody: {
+      valueInputOption: 'USER_ENTERED',
+      data: [{ range: `'${sheetName}'!X${rowIndex}`, values: [[notes]] }],
+    },
+  });
 }
 
 export async function updateLead(rowIndex, status, notes, sheetName = 'No Reply/Declined') {
