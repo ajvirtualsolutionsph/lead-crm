@@ -171,8 +171,6 @@ export async function archiveNoAnswer() {
     }
   });
 
-  if (noAnswerRows.length === 0) return { moved: 0 };
-
   // Create Second Attempt sheet if it doesn't exist, then always apply formatting
   const meta = await sheets.spreadsheets.get({ spreadsheetId: SHEET_ID });
   const existingSheets = meta.data.sheets;
@@ -251,6 +249,8 @@ export async function archiveNoAnswer() {
     requestBody: { requests: formatRequests },
   });
   console.log(`[archive] Formatted sheet "${DEST_TAB}" (banding ${hasBanding ? 'already present' : 'added'})`);
+
+  if (noAnswerRows.length === 0) return { moved: 0 };
 
   // Append No Answer rows to Second Attempt
   await sheets.spreadsheets.values.append({
