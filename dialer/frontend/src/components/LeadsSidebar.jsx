@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { T } from '../theme.js';
 
-const TABS = ['New Leads', 'Initial Email Sent', 'Needs Follow Up', 'No Reply/Declined'];
-
 const STATUS_COLORS = {
   New:              T.badgeNew,
   Called:           T.badgeCalled,
@@ -10,7 +8,7 @@ const STATUS_COLORS = {
   'Not interested': T.badgeNotInt,
 };
 
-export default function LeadsSidebar({ leads, loading, selectedLead, onSelect, onRefresh, activeSheet, onSwitchSheet, onSync }) {
+export default function LeadsSidebar({ leads, loading, selectedLead, onSelect, onRefresh, activeSheet, onSync }) {
   const [query, setQuery] = useState('');
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState(null);
@@ -36,29 +34,6 @@ export default function LeadsSidebar({ leads, loading, selectedLead, onSelect, o
 
   return (
     <div style={{ width: 300, display: 'flex', flexDirection: 'column', borderRight: `1px solid ${T.borderMuted}`, height: '100%', background: T.sidebarBg }}>
-      {/* Sheet tabs */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, padding: '8px 8px 0', borderBottom: `1px solid ${T.borderMuted}` }}>
-        {TABS.map(tab => (
-          <button
-            key={tab}
-            onClick={() => onSwitchSheet(tab)}
-            style={{
-              padding: '4px 8px',
-              fontSize: 11,
-              borderRadius: 4,
-              border: '1px solid',
-              cursor: 'pointer',
-              borderColor: activeSheet === tab ? T.accent : T.borderStrong,
-              background: activeSheet === tab ? T.accentBg : T.inputBg,
-              color: activeSheet === tab ? T.accent : T.textMuted,
-              fontWeight: activeSheet === tab ? 600 : 400,
-            }}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
-
       {/* Search + refresh */}
       <div style={{ padding: '8px 12px 6px', borderBottom: `1px solid ${T.borderMuted}` }}>
         <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
