@@ -39,7 +39,13 @@ export async function getLeads(sheetName = 'Ready for Call') {
     phone: normalizePhone(row[4]),
     website: row[5] || '',
     email: row[6] || '',
+    category: row[2] || '',
+    address: row[3] || '',
+    operating_hours: row[7] || '',
+    rating: row[8] || '',
+    review_count: row[9] || '',
     notes: row[10] || '',
+    details: row[11] || '',
     status: row[21] || 'New',     // col V: call_status
     lastCalled: row[22] || '',    // col W: last_called
     dialer_notes: row[23] || '',  // col X: dialer_notes

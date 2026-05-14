@@ -177,7 +177,16 @@ POST /calls/status-callback (webhook)— SignalWire status events (AMD, no-answe
 - Confirmed Recent Calls "Clear" button already exists in UI (local hide only, not Supabase delete)
 - Frontend URL: https://phone-dialer-six.vercel.app
 
+## Session 17 — Lead details panel + notes without calling (2026-05-14)
+- Split bottom half of NotesPanel into two equal vertical panes: left = Cold Calling Script, right = Lead Details
+- Lead Details pane shows all available fields from the sheet (business, phone, email, website, category, address, hours, rating, reviews, details, notes, status, last called); empty fields hidden
+- Backend `sheets.js` `getLeads()` now returns 6 extra fields: `category`, `address`, `operating_hours`, `rating`, `review_count`, `details` (cols C, D, H, I, J, L)
+- Renamed "Call Notes" label to "Notes" — notes auto-save to col X without requiring an active call
+- Fixed CORS: backend now allows `localhost:5174` alongside `localhost:5173` (frontend port drift when both instances run)
+- `selectedLead` prop added to `NotesPanel` via `App.jsx`
+
 ## Next
+- [ ] **Deploy session 17 changes** — push backend to Render, frontend to Vercel
 - [ ] **Test sync** — click ⇩ Sync in the dialer, verify leads appear correctly
 - [ ] **Test AMD** — call a voicemail number, confirm "Voicemail" logs within 5s
 - [ ] **Real dialing session** — work through actual leads at scale

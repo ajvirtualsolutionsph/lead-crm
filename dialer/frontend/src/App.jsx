@@ -173,6 +173,7 @@ export default function App() {
           transcript={sw.transcript}
           interimText={sw.interimText}
           status={sw.status}
+          selectedLead={selectedLead}
         />
 
         {/* Column 3: Dialpad + Call Log */}

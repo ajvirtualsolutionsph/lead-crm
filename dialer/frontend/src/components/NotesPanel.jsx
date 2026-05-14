@@ -84,6 +84,22 @@ Remember: You're not selling. You're qualifying. If they don't have the pain, mo
   },
 ];
 
+const DETAIL_FIELDS = [
+  { label: 'Business', key: 'name' },
+  { label: 'Phone', key: 'phone' },
+  { label: 'Email', key: 'email' },
+  { label: 'Website', key: 'website' },
+  { label: 'Category', key: 'category' },
+  { label: 'Address', key: 'address' },
+  { label: 'Hours', key: 'operating_hours' },
+  { label: 'Rating', key: 'rating' },
+  { label: 'Reviews', key: 'review_count' },
+  { label: 'Details', key: 'details' },
+  { label: 'Notes', key: 'notes' },
+  { label: 'Status', key: 'status' },
+  { label: 'Last Called', key: 'lastCalled' },
+];
+
 export default function NotesPanel({
   notes, setNotes,
   outcome, setOutcome,
@@ -91,6 +107,7 @@ export default function NotesPanel({
   onSaveAndNext,
   transcript, interimText,
   status,
+  selectedLead,
 }) {
   return (
     <div style={{
@@ -146,7 +163,7 @@ export default function NotesPanel({
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
           <div style={{ marginBottom: 4, fontSize: 11, color: T.textMuted, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-            Call Notes
+            Notes
           </div>
           <textarea
             value={notes}
@@ -208,37 +225,81 @@ export default function NotesPanel({
         )}
       </div>
 
-      {/* Divider */}
-      <div style={{ borderTop: `2px solid ${T.borderStrong}`, padding: '6px 16px', background: T.sidebarBg, flexShrink: 0 }}>
-        <span style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-          Cold Calling Script
-        </span>
+      {/* Divider with column headers */}
+      <div style={{ borderTop: `2px solid ${T.borderStrong}`, display: 'flex', flexShrink: 0, background: T.sidebarBg }}>
+        <div style={{ flex: 1, padding: '6px 16px', borderRight: `1px solid ${T.borderStrong}` }}>
+          <span style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+            Cold Calling Script
+          </span>
+        </div>
+        <div style={{ flex: 1, padding: '6px 16px' }}>
+          <span style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+            Lead Details
+          </span>
+        </div>
       </div>
 
-      {/* Bottom half — script reference */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 14, minHeight: 0 }}>
-        {SCRIPT.map((section, i) => (
-          <div key={i}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: T.textPrimary, marginBottom: 6 }}>
-              {section.title}
+      {/* Bottom half — two equal panes */}
+      <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
+
+        {/* Left pane — script */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 14, borderRight: `1px solid ${T.borderStrong}` }}>
+          {SCRIPT.map((section, i) => (
+            <div key={i}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: T.textPrimary, marginBottom: 6 }}>
+                {section.title}
+              </div>
+              <pre style={{
+                margin: 0,
+                fontFamily: 'system-ui, sans-serif',
+                fontSize: 12,
+                lineHeight: 1.65,
+                color: T.textMuted,
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+                background: T.inputBg,
+                border: `1px solid ${T.borderMuted}`,
+                borderRadius: 6,
+                padding: '8px 10px',
+              }}>
+                {section.content}
+              </pre>
             </div>
-            <pre style={{
-              margin: 0,
-              fontFamily: 'system-ui, sans-serif',
-              fontSize: 12,
-              lineHeight: 1.65,
-              color: T.textMuted,
-              whiteSpace: 'pre-wrap',
-              wordBreak: 'break-word',
-              background: T.inputBg,
-              border: `1px solid ${T.borderMuted}`,
-              borderRadius: 6,
-              padding: '8px 10px',
-            }}>
-              {section.content}
-            </pre>
-          </div>
-        ))}
+          ))}
+        </div>
+
+        {/* Right pane — lead details */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {!selectedLead ? (
+            <div style={{ color: T.textMuted, fontStyle: 'italic', fontSize: 13, marginTop: 8 }}>
+              No lead selected
+            </div>
+          ) : (
+            DETAIL_FIELDS.filter(f => selectedLead[f.key]).map(f => (
+              <div key={f.key} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                  {f.label}
+                </div>
+                <div style={{
+                  fontSize: 12,
+                  color: T.textPrimary,
+                  background: T.inputBg,
+                  border: `1px solid ${T.borderMuted}`,
+                  borderRadius: 4,
+                  padding: '5px 8px',
+                  wordBreak: 'break-word',
+                  lineHeight: 1.5,
+                }}>
+                  {f.key === 'website'
+                    ? <a href={selectedLead[f.key]} target="_blank" rel="noreferrer" style={{ color: '#38bdf8', textDecoration: 'none' }}>{selectedLead[f.key]}</a>
+                    : selectedLead[f.key]
+                  }
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
       </div>
     </div>
   );
