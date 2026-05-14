@@ -97,7 +97,7 @@ export function useSignalWire() {
         to: phoneNumber,
         leadName: leadMeta.leadName || '',
         rowIndex: leadMeta.rowIndex || null,
-        sheetName: leadMeta.sheetName || 'No Reply/Declined',
+        sheetName: leadMeta.sheetName || 'Ready for Call',
       }, { timeout: 30000 });
       leadCallSidRef.current = data.leadCallSid;
       setStatus('in-call');

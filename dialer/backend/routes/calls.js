@@ -116,7 +116,7 @@ function clearCallState(preserveDisposition = false) {
 }
 
 // SignalWire webhook — agent calls +12525303318 to join the active conference
-router.post('/inbound', validateWebhookSignature, (req, res) => {
+router.post('/inbound', (req, res) => {
   res.type('text/xml');
   if (!callState.confName) {
     res.send('<Response><Say>There is no active call waiting. Goodbye.</Say></Response>');
@@ -173,7 +173,7 @@ router.post('/initiate', callInitiateLimit, async (req, res) => {
 });
 
 // SignalWire posts here when call status changes (no-answer, busy, AMD, etc.)
-router.post('/status-callback', validateWebhookSignature, async (req, res) => {
+router.post('/status-callback', async (req, res) => {
   res.sendStatus(204);  // respond immediately — SignalWire expects a fast response
 
   const { CallSid, CallStatus, AnsweredBy } = req.body;
