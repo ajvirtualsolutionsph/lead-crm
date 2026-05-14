@@ -62,6 +62,7 @@ export async function updateDialerNotes(rowIndex, notes, sheetName = 'Ready for 
   });
 }
 
+// Full update: status + timestamp + notes (col V, W, X) — used by Save & Next
 export async function updateLead(rowIndex, status, notes, sheetName = 'Ready for Call') {
   const now = new Date().toISOString();
   const s = `'${sheetName}'`;
@@ -70,9 +71,26 @@ export async function updateLead(rowIndex, status, notes, sheetName = 'Ready for
     requestBody: {
       valueInputOption: 'USER_ENTERED',
       data: [
-        { range: `${s}!V${rowIndex}`, values: [[status]] },  // call_status
-        { range: `${s}!W${rowIndex}`, values: [[now]] },      // last_called
-        { range: `${s}!X${rowIndex}`, values: [[notes]] },    // dialer_notes
+        { range: `${s}!V${rowIndex}`, values: [[status]] },
+        { range: `${s}!W${rowIndex}`, values: [[now]] },
+        { range: `${s}!X${rowIndex}`, values: [[notes]] },
+      ],
+    },
+  });
+}
+
+// Status-only update: status + timestamp (col V, W) — used by auto-log (no-answer, busy, voicemail)
+// Does NOT touch col X (dialer_notes) so user notes are never overwritten automatically
+export async function updateLeadStatus(rowIndex, status, sheetName = 'Ready for Call') {
+  const now = new Date().toISOString();
+  const s = `'${sheetName}'`;
+  await sheets.spreadsheets.values.batchUpdate({
+    spreadsheetId: SHEET_ID,
+    requestBody: {
+      valueInputOption: 'USER_ENTERED',
+      data: [
+        { range: `${s}!V${rowIndex}`, values: [[status]] },
+        { range: `${s}!W${rowIndex}`, values: [[now]] },
       ],
     },
   });

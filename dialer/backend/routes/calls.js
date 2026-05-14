@@ -2,7 +2,7 @@ import { Router } from 'express';
 import crypto from 'crypto';
 import rateLimit from 'express-rate-limit';
 import supabase from '../lib/supabase.js';
-import { updateLead } from '../lib/sheets.js';
+import { updateLead, updateLeadStatus } from '../lib/sheets.js';
 
 const router = Router();
 
@@ -100,7 +100,7 @@ async function autoLog(status, notes) {
     console.error('[autoLog] Supabase insert failed:', err.message);
   }
   if (rowIndex) {
-    updateLead(rowIndex, status, notes, sheetName).catch(err =>
+    updateLeadStatus(rowIndex, status, sheetName).catch(err =>
       console.error('[autoLog] Sheet update failed (non-fatal):', err.message)
     );
   }
