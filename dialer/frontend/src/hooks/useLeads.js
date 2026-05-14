@@ -5,7 +5,7 @@ export function useLeads() {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedLead, setSelectedLead] = useState(null);
-  const [activeSheet, setActiveSheet] = useState('No Reply/Declined');
+  const [activeSheet, setActiveSheet] = useState('Ready for Call');
 
   const fetchLeads = useCallback(async (sheet) => {
     setLoading(true);

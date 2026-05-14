@@ -61,7 +61,7 @@ SIGNALWIRE_SPACE_URL=        # aj-virtual-solutions.signalwire.com
 SIGNALWIRE_PHONE_NUMBER=     # +12525303318
 GOOGLE_SERVICE_ACCOUNT_EMAIL=
 GOOGLE_PRIVATE_KEY=
-GOOGLE_SHEET_ID=             # Phone Dialer - Leads spreadsheet (dedicated dialer sheet)
+GOOGLE_SHEET_ID=             # Ready for Call spreadsheet (dedicated dialer sheet, single tab)
 LEAD_GEN_SHEET_ID=           # Lead Gen Pipeline spreadsheet (source for auto-sync)
 SUPABASE_URL=
 SUPABASE_ANON_KEY=
@@ -88,24 +88,31 @@ cd dialer/frontend && npm run dev
 ## Google Sheets
 
 **Two spreadsheets:**
-- **Lead Gen Pipeline** (`LEAD_GEN_SHEET_ID`) — source of truth; leads entered manually here
-- **Phone Dialer - Leads** (`GOOGLE_SHEET_ID`) — dedicated dialer sheet; synced from Lead Gen Pipeline
+- **Lead Gen Pipeline** (`LEAD_GEN_SHEET_ID`) — source of truth; tabs: New Leads | Initial Email Sent | Needs Follow Up | Ready for Call
+- **Ready for Call** (`GOOGLE_SHEET_ID`) — dedicated dialer sheet (ID: `11-QP3JSPd2KS-8zWP4az1ZTR-qRSx4fciRVbYaZucnk`); single tab synced from Lead Gen Pipeline's "Ready for Call" tab
 
-Tabs (both sheets): New Leads | Initial Email Sent | Needs Follow Up | No Reply/Declined
+**Ready for Call sheet — column layout (A–X):**
 
-| Col | Header | Dialer use |
-|-----|--------|------------|
+| Col | Header | Notes |
+|-----|--------|-------|
 | A | name | fallback display name |
 | B | business_name | display name (primary) |
+| C | category | |
+| D | address | |
 | E | phone | dial target — auto-normalized to E.164 |
 | F | website | sidebar link |
-| J | notes | read-only display |
-| V | aging_days | formula column — DO NOT WRITE (=TODAY()-date_added) |
-| W | last_called | ISO timestamp of last dialer call |
-| X | dialer_notes | editable notes per lead; auto-saved by dialer |
-| Y | call_status | dialer disposition (New/Called/Callback/Not interested) |
+| G | email | |
+| H | operating_hours | |
+| I | rating | |
+| J | review_count | |
+| K | notes | read-only display (from Lead Gen) |
+| L | details | |
+| M–U | email/status cols | copied from Lead Gen, not used by dialer |
+| V | call_status | dialer disposition (New/Called/Callback/Not interested) — WRITE |
+| W | last_called | ISO timestamp of last dialer call — WRITE |
+| X | dialer_notes | editable notes per lead; auto-saved by dialer — WRITE |
 
-`getLeads(sheetName)` reads `'SheetName'!A:Y`. `updateLead(rowIndex, status, notes, sheetName)` writes Y, W, X. `updateDialerNotes(rowIndex, notes, sheetName)` writes X only (auto-save). `syncFromLeadGen()` pulls new rows from Lead Gen Pipeline into Phone Dialer - Leads, skipping duplicates by phone OR business name.
+`getLeads(sheetName)` reads `'Ready for Call'!A:X`. `updateLead(rowIndex, status, notes, sheetName)` writes V, W, X. `updateDialerNotes(rowIndex, notes, sheetName)` writes X only (auto-save). `syncFromLeadGen()` pulls "Ready for Call" tab rows (A:U) from Lead Gen Pipeline, deduplicates by phone OR business name, appends to dialer sheet.
 
 ## Supabase calls table
 ```sql
@@ -155,8 +162,8 @@ POST /calls/status-callback (webhook)— SignalWire status events (AMD, no-answe
 ---
 
 ## Next
-- [ ] **Add LEAD_GEN_SHEET_ID to Render** — env var must be set for auto-sync to run in production
-- [ ] **Test sync** — add a lead to Lead Gen Pipeline, click ⇩ Sync in the dialer, verify it appears
+- [ ] **Update Render env vars** — set `GOOGLE_SHEET_ID=11-QP3JSPd2KS-8zWP4az1ZTR-qRSx4fciRVbYaZucnk` and confirm `LEAD_GEN_SHEET_ID` is set
+- [ ] **Test sync** — add a lead to Lead Gen Pipeline "Ready for Call" tab, click ⇩ Sync in the dialer, verify it appears
 - [ ] **Test AMD** — call a voicemail number, confirm "Voicemail" logs within 5s
 - [ ] **Real dialing session** — work through actual leads at scale
 - [ ] **Change UptimeRobot to 1-min interval** — via UptimeRobot dashboard (currently 5 min)

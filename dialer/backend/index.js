@@ -7,7 +7,7 @@ import helmet from 'helmet';
 import tokenRoute from './routes/token.js';
 import leadsRoute from './routes/leads.js';
 import callsRoute from './routes/calls.js';
-import { initDialerColumns, syncFromLeadGen } from './lib/sheets.js';
+import { syncFromLeadGen } from './lib/sheets.js';
 
 // Fail fast if required env vars are missing
 const REQUIRED_ENV = [
@@ -54,7 +54,6 @@ app.use('/calls', callsRoute);
 app.listen(PORT, () => {
   console.log(`Backend running on port ${PORT}`);
   setupInboundWebhook();
-  initDialerColumns().catch(err => console.error('Sheet init failed (non-fatal):', err.message));
   if (process.env.LEAD_GEN_SHEET_ID) {
     setInterval(() => {
       syncFromLeadGen()

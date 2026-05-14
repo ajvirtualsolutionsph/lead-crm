@@ -31,7 +31,7 @@ export default function App() {
   const [autoToast, setAutoToast] = useState(null);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => { fetchLeads('No Reply/Declined'); }, [fetchLeads]);
+  useEffect(() => { fetchLeads('Ready for Call'); }, [fetchLeads]);
 
   // Load existing notes from sheet when a lead is selected
   useEffect(() => {
