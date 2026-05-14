@@ -26,7 +26,7 @@ Listen for emotion. "Honestly, all of it" = GREEN FLAG
 Q2 – CURRENT SETUP: "And right now, are you handling that yourself, or do you have a VA, an agency, or some tools doing it?"
 This tells you budget reality. Has a VA = perfect upgrade target
 
-Q3 – THE MONEY QUESTION: "If a system handled even 70% of that for you — running on its own, no hand-holding — would that be a 'nice to have' or a 'thank god' moment?"
+Q3 – THE MONEY QUESTION: "If a system handled even 70% of that for you — running on its own, no hand-holding — would that be a 'nice to have' for you, or a 'thank god' moment?"
 "Thank god" or laugh = QUALIFIED → Move to pitch`,
   },
   {
