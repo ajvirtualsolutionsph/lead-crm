@@ -173,81 +173,84 @@ export async function archiveNoAnswer() {
 
   if (noAnswerRows.length === 0) return { moved: 0 };
 
-  // Create Second Attempt sheet if it doesn't exist
+  // Create Second Attempt sheet if it doesn't exist, then always apply formatting
   const meta = await sheets.spreadsheets.get({ spreadsheetId: SHEET_ID });
-  const existingTitles = meta.data.sheets.map(s => s.properties.title);
+  const existingSheets = meta.data.sheets;
+  const existingTitles = existingSheets.map(s => s.properties.title);
+
+  let destSheetId;
 
   if (!existingTitles.includes(DEST_TAB)) {
     const addRes = await sheets.spreadsheets.batchUpdate({
       spreadsheetId: SHEET_ID,
       requestBody: { requests: [{ addSheet: { properties: { title: DEST_TAB } } }] },
     });
-    const newSheetId = addRes.data.replies[0].addSheet.properties.sheetId;
-
-    // Write header row
+    destSheetId = addRes.data.replies[0].addSheet.properties.sheetId;
+    // Write header row on new sheet
     await sheets.spreadsheets.values.update({
       spreadsheetId: SHEET_ID,
       range: `'${DEST_TAB}'!A1`,
       valueInputOption: 'USER_ENTERED',
       requestBody: { values: [header] },
     });
+    console.log(`[archive] Created sheet "${DEST_TAB}"`);
+  } else {
+    destSheetId = existingSheets.find(s => s.properties.title === DEST_TAB).properties.sheetId;
+  }
 
-    // Apply same formatting as Ready for Call sheet
-    const blue  = { red: 0.067, green: 0.302, blue: 0.533 }; // #114D88 header blue
-    const white = { red: 1, green: 1, blue: 1 };
-    const bandLight = { red: 0.863, green: 0.902, blue: 0.953 }; // #DCE6F3 alternating band
+  // Always apply formatting (idempotent except addBanding — skip if already present)
+  const blue      = { red: 0.067, green: 0.302, blue: 0.533 }; // #114D88
+  const white     = { red: 1, green: 1, blue: 1 };
+  const bandLight = { red: 0.863, green: 0.902, blue: 0.953 }; // #DCE6F3
 
-    await sheets.spreadsheets.batchUpdate({
-      spreadsheetId: SHEET_ID,
-      requestBody: {
-        requests: [
-          // Freeze header row
-          {
-            updateSheetProperties: {
-              properties: { sheetId: newSheetId, gridProperties: { frozenRowCount: 1 } },
-              fields: 'gridProperties.frozenRowCount',
-            },
+  const destSheetMeta = existingSheets.find(s => s.properties.title === DEST_TAB);
+  const hasBanding = destSheetMeta?.bandedRanges?.length > 0;
+
+  const formatRequests = [
+    {
+      updateSheetProperties: {
+        properties: { sheetId: destSheetId, gridProperties: { frozenRowCount: 1 } },
+        fields: 'gridProperties.frozenRowCount',
+      },
+    },
+    {
+      repeatCell: {
+        range: { sheetId: destSheetId, startRowIndex: 0, endRowIndex: 1 },
+        cell: {
+          userEnteredFormat: {
+            backgroundColor: blue,
+            textFormat: { bold: true, foregroundColor: white },
+            verticalAlignment: 'MIDDLE',
           },
-          // Header: blue background + white bold text
-          {
-            repeatCell: {
-              range: { sheetId: newSheetId, startRowIndex: 0, endRowIndex: 1 },
-              cell: {
-                userEnteredFormat: {
-                  backgroundColor: blue,
-                  textFormat: { bold: true, foregroundColor: white },
-                  verticalAlignment: 'MIDDLE',
-                },
-              },
-              fields: 'userEnteredFormat(backgroundColor,textFormat,verticalAlignment)',
-            },
-          },
-          // Alternating row banding for data rows
-          {
-            addBanding: {
-              bandedRange: {
-                range: { sheetId: newSheetId, startRowIndex: 1 },
-                rowProperties: {
-                  firstBandColor: white,
-                  secondBandColor: bandLight,
-                },
-              },
-            },
-          },
-          // Compact row height: 21px for all rows
-          {
-            updateDimensionProperties: {
-              range: { sheetId: newSheetId, dimension: 'ROWS', startIndex: 0 },
-              properties: { pixelSize: 21 },
-              fields: 'pixelSize',
-            },
-          },
-        ],
+        },
+        fields: 'userEnteredFormat(backgroundColor,textFormat,verticalAlignment)',
+      },
+    },
+    {
+      updateDimensionProperties: {
+        range: { sheetId: destSheetId, dimension: 'ROWS', startIndex: 0 },
+        properties: { pixelSize: 21 },
+        fields: 'pixelSize',
+      },
+    },
+  ];
+
+  if (!hasBanding) {
+    formatRequests.push({
+      addBanding: {
+        bandedRange: {
+          range: { sheetId: destSheetId, startRowIndex: 1 },
+          rowProperties: { firstBandColor: white, secondBandColor: bandLight },
+        },
       },
     });
-
-    console.log(`[archive] Created and formatted sheet "${DEST_TAB}"`);
   }
+
+  await sheets.spreadsheets.batchUpdate({
+    spreadsheetId: SHEET_ID,
+    requestBody: { requests: formatRequests },
+  });
+  console.log(`[archive] Formatted sheet "${DEST_TAB}" (banding ${hasBanding ? 'already present' : 'added'})`);
 
   // Append No Answer rows to Second Attempt
   await sheets.spreadsheets.values.append({
