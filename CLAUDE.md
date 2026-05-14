@@ -60,12 +60,15 @@ SUPABASE_URL=
 SUPABASE_ANON_KEY=
 PORT=3001
 FRONTEND_URL=http://localhost:5173
+API_SECRET=                  # shared secret — must match VITE_API_SECRET in frontend
 ```
 
 ## Frontend .env
 ```
 VITE_BACKEND_URL=http://localhost:3001
 VITE_SIGNALWIRE_SPACE_URL=aj-virtual-solutions.signalwire.com
+VITE_SIGNALWIRE_FROM_NUMBER=+12525303318
+VITE_API_SECRET=             # shared secret — must match API_SECRET in backend
 ```
 
 ## Dev commands
@@ -163,6 +166,16 @@ create table calls (
 - [x] Added "Clear" button to Recent Calls list — clears display for session, data stays in Supabase (session 9)
 - [x] Wake-up ping on page load — `axios.get('/health')` fires silently on app load to warm Render before first call (session 10)
 - [x] Increased `/calls/initiate` axios timeout to 30s — prevents ERR_TIMED_OUT on slow Render cold starts (session 10)
+- [x] Full security audit completed — 4 critical, 6 warning, 16 minor issues identified (session 11)
+- [x] `.env` confirmed never committed to git — no history purge needed (session 11)
+- [x] `API_SECRET` added — all `/calls/*` and `/leads/*` endpoints now require `x-api-key` header; SignalWire webhooks exempted (session 11)
+- [x] Helmet.js added — sets `X-Content-Type-Options`, `X-Frame-Options`, `Strict-Transport-Security` and other security headers (session 11)
+- [x] Rate limiting added — `POST /calls/initiate` capped at 20 requests/min per IP via `express-rate-limit` (session 11)
+- [x] Webhook signature validation — HMAC-SHA1 verification on `/calls/inbound` and `/calls/status-callback` (production only) (session 11)
+- [x] Phone number input validation — rejects malformed numbers before sending to SignalWire (session 11)
+- [x] Env var startup check — backend exits immediately with clear error if any required env var is missing (session 11)
+- [x] Fake mute button removed — was toggling UI state only; conference bridge has no browser audio to mute (session 11)
+- [x] `VITE_API_SECRET` added to Vercel env vars, `API_SECRET` added to Render env vars — verified live via DevTools (session 11)
 
 ## Agent workflow (session 6)
 - Agent joins calls by dialing **+12525303318** via **Viber Out** from their PH phone (Viber Out → US number, no UDP block)
@@ -175,6 +188,7 @@ create table calls (
 - [ ] **Change UptimeRobot ping interval to 1 min** — reduces cold start risk (currently 5 min; do via UptimeRobot dashboard)
 - [ ] **GitHub profile** — add repo descriptions, topics, and profile README (gh CLI not installed; do via GitHub web UI)
 - [ ] **Optional**: when SignalWire support enables +63 dialing, agent can receive calls directly instead of dialing in
+- [ ] **Remaining audit items** — race condition in global `callState` (low risk for single-agent use), Google Sheets API timeout, Supabase autoLog retry logic
 
 ### 🔲 Later
 - [ ] Investigate WebRTC audio for browser-based calling (requires TURN relay or different ISP)
