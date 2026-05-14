@@ -4,11 +4,14 @@ import { T } from '../theme.js';
 const SCRIPT = [
   {
     title: '🎯 FIRST 30 SECONDS — Hook + Permission',
-    content: `"Hey, is this [First Name]? — Hi, my name's AJ. Real quick, I know I'm calling out of the blue, so I'll keep this to 22 seconds and you can hang up if it's not relevant. Can I have those 22 seconds?"
+    content: `"Hey, is this [First Name]? — Hi, it's just AJ an AI Automation Expert from the Philippines. I was wondering if you could help me out for a moment?"
 
 ⏸️ PAUSE. Wait for them to say "sure" or laugh. Don't skip the pause.
 
-"Appreciate it. So — I work with solo founders and small business owners who are still personally answering emails at 9pm and writing their own social posts on Sundays. I build them one AI system that runs the inbox, the lead follow-ups, and the marketing content — so the business stops depending on them being awake. Before I pitch anything though — is that even a real problem for you, or have you already got that handled?"
+"Thank you, well I am not sure who I should be talking to. I am trying to reach the person whose responsible for overseeing any possible hidden gaps in maintaining your business website, client follow ups and back-end admin tasks that could be causing missed follow ups and business opportunity with customers. Who should I be talking to about that?"
+
+If the person you're speaking to is not the right person:
+"Should I have you transfer me over to him/her to leave a voicemail and she can call me back if she needs help?"
 
 Why This Works:
 • "22 seconds" is oddly specific — forces them to actually listen
@@ -33,10 +36,10 @@ Q3 – THE MONEY QUESTION: "If a system handled even 70% of that for you — run
     title: '🎤 THE PITCH — Only if qualified (30s)',
     content: `"Okay, based on what you just told me — you're exactly who I built this for. Let me tell you what it actually is in 30 seconds, then I'll stop talking."
 
-"It's called the AI Admin & Marketing Agent. One system, two jobs. On the admin side: it triages your inbox, drafts your replies in your voice, researches and qualifies leads, and books calls straight to your calendar. On the marketing side: it generates content, schedules your posts, and tracks what's actually getting engagement so you stop guessing."
+"It's called the AI Admin & Marketing Agent. One system, two jobs. On the admin side: it triages your inbox, drafts your replies in your voice, respond to customer inquiries, and books calls straight to your calendar. On the marketing side: it generates content, schedules your posts, and tracks what's actually getting engagement so you stop guessing."
 
 "Three things people are usually surprised by:"
-1. One-time build around $2,000 to $2,500. No subscription. You own it. Compared to $58,000/yr hire for the admin piece alone, most break even before month two.
+1. One-time build around $2,000 to $2,500. You own it. No fuss about sick days, holidays and day offs. Compared to a roughly $58,000/yr hire for the admin piece alone, most break even before month two.
 2. You don't need to be technical. I build it to run in the background. Anyone can use it.
 3. I only take 4 builds a month, and I've got 3 slots left this month.
 
