@@ -196,8 +196,14 @@ POST /calls/status-callback (webhook)— SignalWire status events (AMD, no-answe
 - `react-resizable-panels` was attempted but reverted — too disruptive
 - **Files changed:** `dialer/frontend/src/App.jsx`, `dialer/frontend/src/components/NotesPanel.jsx`
 
+## Session 19 — Notes editing fix (2026-05-14)
+- Fixed bug where transcript auto-populated from call overwrote manually typed notes after call ended
+- Changed `setNotes(body)` to `setNotes(prev => prev ? \`${prev}\n\n--- Transcript ---\n${body}\` : body)` — now appends transcript below existing notes instead of replacing
+- Notes are always editable before and after a call; existing dialer_notes load correctly when selecting any lead
+- **Files changed:** `dialer/frontend/src/App.jsx`
+
 ## Next
-- [ ] **Deploy session 18 changes** — push frontend to Vercel (backend unchanged)
+- [ ] **Deploy session 18 + 19 frontend changes** — push App.jsx, NotesPanel.jsx to Vercel
 - [ ] **Deploy session 17 backend changes** — push backend to Render (sheets.js, index.js)
 - [ ] **Test sync** — click ⇩ Sync in the dialer, verify leads appear correctly
 - [ ] **Test AMD** — call a voicemail number, confirm "Voicemail" logs within 5s

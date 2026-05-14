@@ -84,11 +84,11 @@ export default function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sw.serverDisposition]);
 
-  // Pre-fill notes from transcript when outcome form opens
+  // Append transcript below existing notes when outcome form opens (never overwrite)
   useEffect(() => {
     if (showOutcome && sw.transcript && sw.transcript.length > 0) {
       const body = sw.transcript.map(e => `[${e.time}] You: ${e.text}`).join('\n');
-      setNotes(body);
+      setNotes(prev => prev ? `${prev}\n\n--- Transcript ---\n${body}` : body);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showOutcome]);
