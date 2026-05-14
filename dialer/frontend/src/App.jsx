@@ -157,6 +157,11 @@ export default function App() {
             fetchLeads(activeSheet);
             return result;
           }}
+          onArchive={async () => {
+            const result = await axios.post('/leads/archive-no-answer');
+            fetchLeads(activeSheet);
+            return result.data;
+          }}
         />
 
         {/* Column 2: Notes */}

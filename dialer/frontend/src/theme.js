@@ -31,6 +31,7 @@ export const T = {
   badgeCalled:      { bg: '#263d58', text: '#7a9bbf' },
   badgeCallback:    { bg: '#3b2a00', text: '#fbbf24' },
   badgeNotInt:      { bg: '#3b0f0f', text: '#f87171' },
+  badgeNoAnswer:    { bg: '#2d1a00', text: '#f97316' },
 
   transcriptBg:     '#0d1a2b',
   transcriptBorder: '#263d58',

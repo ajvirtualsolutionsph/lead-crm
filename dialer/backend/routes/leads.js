@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getLeads, updateLead, updateDialerNotes, syncFromLeadGen, SHEET_TABS } from '../lib/sheets.js';
+import { getLeads, updateLead, updateDialerNotes, syncFromLeadGen, archiveNoAnswer, SHEET_TABS } from '../lib/sheets.js';
 
 const router = Router();
 
@@ -12,6 +12,16 @@ router.post('/sync', async (_req, res) => {
   } catch (err) {
     console.error('Sync error:', err);
     res.status(500).json({ error: 'Sync failed' });
+  }
+});
+
+router.post('/archive-no-answer', async (_req, res) => {
+  try {
+    const result = await archiveNoAnswer();
+    res.json(result);
+  } catch (err) {
+    console.error('Archive error:', err);
+    res.status(500).json({ error: err.message || 'Archive failed' });
   }
 });
 

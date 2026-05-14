@@ -9,8 +9,7 @@ const auth = new google.auth.JWT({
 const sheets = google.sheets({ version: 'v4', auth });
 const SHEET_ID = process.env.GOOGLE_SHEET_ID;
 
-// Single tab in the Ready for Call dialer sheet
-export const SHEET_TABS = ['Ready for Call'];
+export const SHEET_TABS = ['Ready for Call', 'Second Attempt'];
 
 // Column layout (0-indexed, A=0):
 // A(0)  name          B(1)  business_name   C(2)  category       D(3)  address
@@ -30,7 +29,14 @@ function normalizePhone(raw) {
 
 export async function getLeads(sheetName = 'Ready for Call') {
   const range = `'${sheetName}'!A:X`;
-  const res = await sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range });
+  let res;
+  try {
+    res = await sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range });
+  } catch (err) {
+    // Sheet doesn't exist yet — return empty list
+    if (err.code === 400 || err.message?.includes('Unable to parse range')) return [];
+    throw err;
+  }
   const rows = res.data.values || [];
   return rows.slice(1).map((row, i) => ({
     rowIndex: i + 2,
@@ -139,4 +145,74 @@ export async function syncFromLeadGen() {
 
   console.log(`[sync] "${DEST_TAB}": +${newRows.length} new leads`);
   return { added: newRows.length };
+}
+
+// Move all "No Answer" leads from Ready for Call → Second Attempt (creates tab if needed)
+export async function archiveNoAnswer() {
+  const SOURCE_TAB = 'Ready for Call';
+  const DEST_TAB = 'Second Attempt';
+
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: SHEET_ID,
+    range: `'${SOURCE_TAB}'!A:X`,
+  });
+  const rows = res.data.values || [];
+  if (rows.length < 2) return { moved: 0 };
+
+  const header = rows[0];
+  const dataRows = rows.slice(1);
+
+  const noAnswerIndices = [];
+  const noAnswerRows = [];
+  dataRows.forEach((row, i) => {
+    if ((row[21] || '').trim() === 'No Answer') {
+      noAnswerIndices.push(i);
+      noAnswerRows.push(row);
+    }
+  });
+
+  if (noAnswerRows.length === 0) return { moved: 0 };
+
+  // Create Second Attempt sheet if it doesn't exist
+  const meta = await sheets.spreadsheets.get({ spreadsheetId: SHEET_ID });
+  const existingTitles = meta.data.sheets.map(s => s.properties.title);
+
+  if (!existingTitles.includes(DEST_TAB)) {
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId: SHEET_ID,
+      requestBody: { requests: [{ addSheet: { properties: { title: DEST_TAB } } }] },
+    });
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SHEET_ID,
+      range: `'${DEST_TAB}'!A1`,
+      valueInputOption: 'USER_ENTERED',
+      requestBody: { values: [header] },
+    });
+    console.log(`[archive] Created sheet "${DEST_TAB}"`);
+  }
+
+  // Append No Answer rows to Second Attempt
+  await sheets.spreadsheets.values.append({
+    spreadsheetId: SHEET_ID,
+    range: `'${DEST_TAB}'!A:X`,
+    valueInputOption: 'USER_ENTERED',
+    insertDataOption: 'INSERT_ROWS',
+    requestBody: { values: noAnswerRows },
+  });
+
+  // Delete from Ready for Call in reverse order to keep row indices stable
+  const sourceSheetId = meta.data.sheets.find(s => s.properties.title === SOURCE_TAB).properties.sheetId;
+  const deleteRequests = [...noAnswerIndices].reverse().map(i => ({
+    deleteDimension: {
+      range: { sheetId: sourceSheetId, dimension: 'ROWS', startIndex: i + 1, endIndex: i + 2 },
+    },
+  }));
+
+  await sheets.spreadsheets.batchUpdate({
+    spreadsheetId: SHEET_ID,
+    requestBody: { requests: deleteRequests },
+  });
+
+  console.log(`[archive] Moved ${noAnswerRows.length} No Answer leads to "${DEST_TAB}"`);
+  return { moved: noAnswerRows.length };
 }

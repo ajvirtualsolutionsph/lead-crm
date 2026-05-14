@@ -1,17 +1,21 @@
 import { useState } from 'react';
 import { T } from '../theme.js';
 
+const TABS = ['Ready for Call', 'Second Attempt'];
+
 const STATUS_COLORS = {
   New:              T.badgeNew,
   Called:           T.badgeCalled,
   Callback:         T.badgeCallback,
   'Not interested': T.badgeNotInt,
+  'No Answer':      T.badgeNoAnswer,
 };
 
-export default function LeadsSidebar({ leads, loading, selectedLead, onSelect, onRefresh, activeSheet, onSync }) {
+export default function LeadsSidebar({ leads, loading, selectedLead, onSelect, onRefresh, activeSheet, onSwitchSheet, onSync, onArchive }) {
   const [query, setQuery] = useState('');
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState(null);
+  const [archiving, setArchiving] = useState(false);
 
   async function handleSync() {
     setSyncing(true);
@@ -27,6 +31,20 @@ export default function LeadsSidebar({ leads, loading, selectedLead, onSelect, o
     }
   }
 
+  async function handleArchive() {
+    setArchiving(true);
+    setSyncMsg(null);
+    try {
+      const result = await onArchive();
+      setSyncMsg(result.moved > 0 ? `Moved ${result.moved} to Second Attempt` : 'No No Answer leads');
+    } catch {
+      setSyncMsg('Archive failed');
+    } finally {
+      setArchiving(false);
+      setTimeout(() => setSyncMsg(null), 4000);
+    }
+  }
+
   const filtered = leads.filter(l =>
     l.name.toLowerCase().includes(query.toLowerCase()) ||
     l.phone.includes(query)
@@ -34,6 +52,33 @@ export default function LeadsSidebar({ leads, loading, selectedLead, onSelect, o
 
   return (
     <div style={{ width: 300, display: 'flex', flexDirection: 'column', borderRight: `1px solid ${T.borderMuted}`, height: '100%', background: T.sidebarBg }}>
+
+      {/* Sheet tabs */}
+      <div style={{ display: 'flex', borderBottom: `1px solid ${T.borderMuted}`, flexShrink: 0 }}>
+        {TABS.map(tab => (
+          <button
+            key={tab}
+            onClick={() => { setQuery(''); onSwitchSheet(tab); }}
+            style={{
+              flex: 1,
+              padding: '8px 4px',
+              fontSize: 11,
+              fontWeight: activeSheet === tab ? 700 : 400,
+              border: 'none',
+              borderBottom: activeSheet === tab ? `2px solid ${T.accent}` : '2px solid transparent',
+              background: 'transparent',
+              color: activeSheet === tab ? T.accent : T.textMuted,
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
       {/* Search + refresh */}
       <div style={{ padding: '8px 12px 6px', borderBottom: `1px solid ${T.borderMuted}` }}>
         <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
@@ -51,18 +96,30 @@ export default function LeadsSidebar({ leads, loading, selectedLead, onSelect, o
           >
             ↻
           </button>
-          <button
-            onClick={handleSync}
-            disabled={syncing}
-            title="Sync new leads from Lead Gen Pipeline"
-            style={{ padding: '6px 10px', borderRadius: 4, border: `1px solid ${T.borderStrong}`, background: T.inputBg, cursor: syncing ? 'not-allowed' : 'pointer', fontSize: 13, color: T.accent, opacity: syncing ? 0.6 : 1, whiteSpace: 'nowrap' }}
-          >
-            {syncing ? '…' : '⇩ Sync'}
-          </button>
+          {activeSheet === 'Ready for Call' && (
+            <button
+              onClick={handleSync}
+              disabled={syncing}
+              title="Sync new leads from Lead Gen Pipeline"
+              style={{ padding: '6px 10px', borderRadius: 4, border: `1px solid ${T.borderStrong}`, background: T.inputBg, cursor: syncing ? 'not-allowed' : 'pointer', fontSize: 13, color: T.accent, opacity: syncing ? 0.6 : 1, whiteSpace: 'nowrap' }}
+            >
+              {syncing ? '…' : '⇩ Sync'}
+            </button>
+          )}
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <p style={{ margin: 0, fontSize: 12, color: T.textMuted }}>{filtered.length} leads</p>
-          {syncMsg && <p style={{ margin: 0, fontSize: 12, color: syncMsg.includes('failed') ? '#f87171' : '#4ade80' }}>{syncMsg}</p>}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 6 }}>
+          <p style={{ margin: 0, fontSize: 12, color: T.textMuted, flexShrink: 0 }}>{filtered.length} leads</p>
+          {syncMsg && <p style={{ margin: 0, fontSize: 12, color: syncMsg.includes('failed') ? '#f87171' : '#4ade80', textAlign: 'right' }}>{syncMsg}</p>}
+          {activeSheet === 'Ready for Call' && !syncMsg && (
+            <button
+              onClick={handleArchive}
+              disabled={archiving}
+              title="Move all No Answer leads to Second Attempt sheet"
+              style={{ padding: '3px 8px', borderRadius: 4, border: `1px solid ${T.borderStrong}`, background: T.inputBg, cursor: archiving ? 'not-allowed' : 'pointer', fontSize: 11, color: T.badgeNoAnswer.text, opacity: archiving ? 0.6 : 1, whiteSpace: 'nowrap', flexShrink: 0 }}
+            >
+              {archiving ? '…' : '→ Archive No Answer'}
+            </button>
+          )}
         </div>
       </div>
 
