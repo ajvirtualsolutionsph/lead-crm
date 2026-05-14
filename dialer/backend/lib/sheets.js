@@ -197,9 +197,9 @@ export async function archiveNoAnswer() {
   }
 
   // Always apply formatting (idempotent except addBanding — skip if already present)
-  const blue      = { red: 0.067, green: 0.302, blue: 0.533 }; // #114D88
+  const blue      = { red: 0.22745098, green: 0.46666667, blue: 0.84705883 }; // #3A77D8 matches Ready for Call
   const white     = { red: 1, green: 1, blue: 1 };
-  const bandLight = { red: 0.863, green: 0.902, blue: 0.953 }; // #DCE6F3
+  const bandLight = { red: 0.92941177, green: 0.9490196,  blue: 0.9764706  }; // #EDF2FA matches Ready for Call
 
   const destSheetMeta = existingSheets.find(s => s.properties.title === DEST_TAB);
   const hasBanding = destSheetMeta?.bandedRanges?.length > 0;
