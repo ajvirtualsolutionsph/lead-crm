@@ -171,6 +171,12 @@ POST /calls/status-callback (webhook)— SignalWire status events (AMD, no-answe
 - Removed tab switcher UI — single sheet, no tabs needed
 - Added cold calling script (AJ_Cold_Calling_Flow.docx) to bottom half of NotesPanel
 
+## Session 16 — Supabase wipe + housekeeping (2026-05-14)
+- Wiped all 21 rows from Supabase `calls` table — fresh start; Google Sheets untouched
+- Confirmed auto-sync from Lead Gen Pipeline runs every 30 min (no changes needed)
+- Confirmed Recent Calls "Clear" button already exists in UI (local hide only, not Supabase delete)
+- Frontend URL: https://phone-dialer-six.vercel.app
+
 ## Next
 - [ ] **Test sync** — click ⇩ Sync in the dialer, verify leads appear correctly
 - [ ] **Test AMD** — call a voicemail number, confirm "Voicemail" logs within 5s
