@@ -161,9 +161,18 @@ POST /calls/status-callback (webhook)— SignalWire status events (AMD, no-answe
 
 ---
 
+## Session 15 — New dialer sheet + script panel (2026-05-14)
+- Replaced Phone Dialer - Leads with new "Ready for Call" spreadsheet (`11-QP3JSPd2KS-8zWP4az1ZTR-qRSx4fciRVbYaZucnk`)
+- Single tab only — "Ready for Call"; sync pulls from Lead Gen Pipeline's "Ready for Call" tab
+- Rewrote `sheets.js`: new column layout (notes=K, call_status=V, last_called=W, dialer_notes=X)
+- Removed `initDialerColumns` (was crashing backend on startup → sync failed)
+- Pulled 100 leads from Lead Gen Pipeline sorted: 19 priority (name+hours) on top, 81 below
+- Applied compact sheet formatting: 21px rows, frozen header, blue header, alternating bands
+- Removed tab switcher UI — single sheet, no tabs needed
+- Added cold calling script (AJ_Cold_Calling_Flow.docx) to bottom half of NotesPanel
+
 ## Next
-- [ ] **Update Render env vars** — set `GOOGLE_SHEET_ID=11-QP3JSPd2KS-8zWP4az1ZTR-qRSx4fciRVbYaZucnk` and confirm `LEAD_GEN_SHEET_ID` is set
-- [ ] **Test sync** — add a lead to Lead Gen Pipeline "Ready for Call" tab, click ⇩ Sync in the dialer, verify it appears
+- [ ] **Test sync** — click ⇩ Sync in the dialer, verify leads appear correctly
 - [ ] **Test AMD** — call a voicemail number, confirm "Voicemail" logs within 5s
 - [ ] **Real dialing session** — work through actual leads at scale
 - [ ] **Change UptimeRobot to 1-min interval** — via UptimeRobot dashboard (currently 5 min)
