@@ -1,5 +1,89 @@
 import { T } from '../theme.js';
 
+const SCRIPT = [
+  {
+    title: '🎯 FIRST 30 SECONDS — Hook + Permission',
+    content: `"Hey, is this [First Name]? — Hi, my name's AJ. Real quick, I know I'm calling out of the blue, so I'll keep this to 22 seconds and you can hang up if it's not relevant. Can I have those 22 seconds?"
+
+⏸️ PAUSE. Wait for them to say "sure" or laugh. Don't skip the pause.
+
+"Appreciate it. So — I work with solo founders and small business owners who are still personally answering emails at 9pm and writing their own social posts on Sundays. I build them one AI system that runs the inbox, the lead follow-ups, and the marketing content — so the business stops depending on them being awake. Before I pitch anything though — is that even a real problem for you, or have you already got that handled?"`,
+  },
+  {
+    title: '🔍 QUALIFYING — 3 Questions Only (60–90s)',
+    content: `"Mind if I ask three quick questions to see if this is even worth your time? Cool —"
+
+Q1 – PAIN: "What's eating the most hours in your week right now — is it inbox and admin stuff, chasing leads, or content and marketing?"
+→ "Honestly, all of it" = GREEN FLAG
+
+Q2 – SETUP: "And right now, are you handling that yourself, or do you have a VA, an agency, or some tools doing it?"
+→ Has a VA = perfect upgrade target
+
+Q3 – MONEY: "If a system handled even 70% of that for you — running on its own, no hand-holding — would that be a 'nice to have' or a 'thank god' moment?"
+→ "Thank god" or laugh = QUALIFIED → move to pitch`,
+  },
+  {
+    title: '🎤 THE PITCH — Only if qualified (30s)',
+    content: `"Okay, based on what you just told me — you're exactly who I built this for. Let me tell you what it actually is in 30 seconds, then I'll stop talking."
+
+"It's called the AI Admin & Marketing Agent. One system, two jobs. Admin side: triages your inbox, drafts replies in your voice, researches and qualifies leads, books calls to your calendar. Marketing side: generates content, schedules posts, tracks engagement so you stop guessing."
+
+Three things people are surprised by:
+1. One-time $2,000–$2,500. No subscription. You own it. Most break even before month two.
+2. You don't need to be technical. It runs in the background. Anyone can use it.
+3. I only take 4 builds a month — 3 slots left this month.
+
+"The way I figure out if it's a real fit is a 30-min Zoom — live demo, you ask whatever, you decide. No pressure pitch at the end."`,
+  },
+  {
+    title: '📅 SOFT CLOSE → BOOK',
+    content: `"Two ways we can do this — I can text or email you my Calendly link and you pick a slot, or I can read you a couple of times right now and we lock it in. Which is easier?"
+
+IF LINK: "Done. What's the best email? — Great, sending it now from aj.virtualsolutionsph@gmail.com. Book within 48 hours if you can, slots go fast."
+
+IF TIMES: "I've got [Day] at [Time] or [Day] at [Time], both your timezone. Which works?" → Confirm → "Perfect. Calendar invite coming now."`,
+  },
+  {
+    title: '🟡 OBJECTIONS',
+    content: `"I'm too small"
+→ "Backwards. Big companies have teams. You're doing all of it personally — you get the most hours back."
+
+"Can't afford $2K"
+→ "50/50 payment, so $1K upfront. The lead-gen piece usually pays for the build. Walk you through that on the demo?"
+
+"Already use ChatGPT"
+→ "Good — means you get the idea. Difference is you're prompting every time. What I build prompts itself. It reads, decides, drafts, and acts — without you opening anything."
+
+"Have a VA already"
+→ "Perfect — VA isn't going anywhere. System handles repetitive stuff so your VA does thinking work. Most clients run both together."
+
+"Send me email"
+→ "Will do. Based on what you said about [Q1 answer] — should I send Admin, Marketing, or both? Sending within the hour with Calendly link." THEN ACTUALLY DO IT.`,
+  },
+  {
+    title: '📋 PRE-CALL CHECKLIST',
+    content: `☐ Look at their website/social for 30 seconds — find ONE thing to reference
+☐ Pull up Calendly link in a tab, ready to paste
+☐ Have a notes doc open — capture Q1/Q2 answers for follow-up
+☐ Stand up and SMILE before you dial — it changes your voice`,
+  },
+  {
+    title: '🎯 DAILY TARGETS',
+    content: `Dials per day:         20–30
+Conversations:         5–8
+Qualified prospects:   2–3
+Demos booked (good day): 1`,
+  },
+  {
+    title: '⚡ PERSONALIZATION SWAPS',
+    content: `Agencies: "…handle the prospecting and follow-ups your account managers hate doing."
+E-commerce: "…replace the customer service and order admin work eating your team's afternoons."
+Coaches/consultants: "…handle inbox triage and discovery-call scheduling so you stop being your own assistant."
+
+Remember: You're not selling. You're qualifying. If they don't have the pain, move on.`,
+  },
+];
+
 export default function NotesPanel({
   notes, setNotes,
   outcome, setOutcome,
@@ -22,9 +106,9 @@ export default function NotesPanel({
         <h2 style={{ margin: 0, fontSize: 16, color: T.textPrimary }}>Notes</h2>
       </div>
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 16, overflowY: 'auto', gap: 12 }}>
+      {/* Top half — call notes */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 16, overflowY: 'auto', gap: 12, minHeight: 0 }}>
 
-        {/* Live transcription — only while in-call */}
         {status === 'in-call' && (
           <div style={{
             background: T.transcriptBg,
@@ -60,7 +144,6 @@ export default function NotesPanel({
           </div>
         )}
 
-        {/* Call notes textarea — always visible, grows to fill space */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
           <div style={{ marginBottom: 4, fontSize: 11, color: T.textMuted, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
             Call Notes
@@ -86,7 +169,6 @@ export default function NotesPanel({
           />
         </div>
 
-        {/* Auto-log toast */}
         {autoToast && (
           <div style={{
             padding: '10px 14px',
@@ -102,7 +184,6 @@ export default function NotesPanel({
           </div>
         )}
 
-        {/* Outcome form — post-call */}
         {showOutcome && (
           <div style={{ padding: 14, background: T.inputBg, borderRadius: 6, border: `1px solid ${T.borderStrong}`, flexShrink: 0 }}>
             <p style={{ margin: '0 0 8px', fontWeight: 600, fontSize: 13, color: T.textPrimary }}>Call outcome</p>
@@ -125,6 +206,39 @@ export default function NotesPanel({
             </button>
           </div>
         )}
+      </div>
+
+      {/* Divider */}
+      <div style={{ borderTop: `2px solid ${T.borderStrong}`, padding: '6px 16px', background: T.sidebarBg, flexShrink: 0 }}>
+        <span style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+          Cold Calling Script
+        </span>
+      </div>
+
+      {/* Bottom half — script reference */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 14, minHeight: 0 }}>
+        {SCRIPT.map((section, i) => (
+          <div key={i}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: T.textPrimary, marginBottom: 6 }}>
+              {section.title}
+            </div>
+            <pre style={{
+              margin: 0,
+              fontFamily: 'system-ui, sans-serif',
+              fontSize: 12,
+              lineHeight: 1.65,
+              color: T.textMuted,
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+              background: T.inputBg,
+              border: `1px solid ${T.borderMuted}`,
+              borderRadius: 6,
+              padding: '8px 10px',
+            }}>
+              {section.content}
+            </pre>
+          </div>
+        ))}
       </div>
     </div>
   );
