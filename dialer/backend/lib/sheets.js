@@ -32,7 +32,7 @@ function normalizePhone(raw) {
 }
 
 export async function getLeads(sheetName = 'No Reply/Declined') {
-  const range = `'${sheetName}'!A:X`;
+  const range = `'${sheetName}'!A:Y`;
   const res = await sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range });
   const rows = res.data.values || [];
   // Skip header row (index 0). Use business_name (B/1) as display name.
@@ -43,9 +43,9 @@ export async function getLeads(sheetName = 'No Reply/Declined') {
     phone: normalizePhone(row[4]),
     website: row[5] || '',
     notes: row[9] || '',
-    status: row[21] || 'New',
-    lastCalled: row[22] || '',
-    dialer_notes: row[23] || '',
+    status: row[24] || 'New',    // col Y (moved from V to avoid aging-days formula)
+    lastCalled: row[22] || '',   // col W
+    dialer_notes: row[23] || '', // col X
   }));
 }
 
@@ -119,7 +119,7 @@ export async function updateLead(rowIndex, status, notes, sheetName = 'No Reply/
     requestBody: {
       valueInputOption: 'USER_ENTERED',
       data: [
-        { range: `${s}!V${rowIndex}`, values: [[status]] },
+        { range: `${s}!Y${rowIndex}`, values: [[status]] }, // call_status moved from V to Y
         { range: `${s}!W${rowIndex}`, values: [[now]] },
         { range: `${s}!X${rowIndex}`, values: [[notes]] },
       ],

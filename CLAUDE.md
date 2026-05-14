@@ -100,11 +100,12 @@ Tabs (both sheets): New Leads | Initial Email Sent | Needs Follow Up | No Reply/
 | E | phone | dial target — auto-normalized to E.164 |
 | F | website | sidebar link |
 | J | notes | read-only display |
-| V | call_status | dialer disposition (New/Called/Callback/Not interested) |
+| V | aging_days | formula column — DO NOT WRITE (=TODAY()-date_added) |
 | W | last_called | ISO timestamp of last dialer call |
 | X | dialer_notes | editable notes per lead; auto-saved by dialer |
+| Y | call_status | dialer disposition (New/Called/Callback/Not interested) |
 
-`getLeads(sheetName)` reads `'SheetName'!A:X`. `updateLead(rowIndex, status, notes, sheetName)` writes V, W, X. `updateDialerNotes(rowIndex, notes, sheetName)` writes X only (auto-save). `syncFromLeadGen()` pulls new rows from Lead Gen Pipeline into Phone Dialer - Leads, skipping duplicates by phone OR business name.
+`getLeads(sheetName)` reads `'SheetName'!A:Y`. `updateLead(rowIndex, status, notes, sheetName)` writes Y, W, X. `updateDialerNotes(rowIndex, notes, sheetName)` writes X only (auto-save). `syncFromLeadGen()` pulls new rows from Lead Gen Pipeline into Phone Dialer - Leads, skipping duplicates by phone OR business name.
 
 ## Supabase calls table
 ```sql
