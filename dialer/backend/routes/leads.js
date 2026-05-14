@@ -1,9 +1,19 @@
 import { Router } from 'express';
-import { getLeads, updateLead, updateDialerNotes, SHEET_TABS } from '../lib/sheets.js';
+import { getLeads, updateLead, updateDialerNotes, syncFromLeadGen, SHEET_TABS } from '../lib/sheets.js';
 
 const router = Router();
 
 router.get('/tabs', (_req, res) => res.json(SHEET_TABS));
+
+router.post('/sync', async (_req, res) => {
+  try {
+    const result = await syncFromLeadGen();
+    res.json(result);
+  } catch (err) {
+    console.error('Sync error:', err);
+    res.status(500).json({ error: 'Sync failed' });
+  }
+});
 
 router.get('/', async (req, res) => {
   try {

@@ -36,5 +36,10 @@ export function useLeads() {
     }
   }, []);
 
-  return { leads, loading, selectedLead, setSelectedLead, fetchLeads, updateLead, activeSheet, switchSheet };
+  const syncLeads = useCallback(async () => {
+    const { data } = await axios.post('/leads/sync');
+    return data; // { added: N }
+  }, []);
+
+  return { leads, loading, selectedLead, setSelectedLead, fetchLeads, updateLead, activeSheet, switchSheet, syncLeads };
 }

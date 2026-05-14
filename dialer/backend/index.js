@@ -7,7 +7,7 @@ import helmet from 'helmet';
 import tokenRoute from './routes/token.js';
 import leadsRoute from './routes/leads.js';
 import callsRoute from './routes/calls.js';
-import { initDialerColumns } from './lib/sheets.js';
+import { initDialerColumns, syncFromLeadGen } from './lib/sheets.js';
 
 // Fail fast if required env vars are missing
 const REQUIRED_ENV = [
@@ -55,6 +55,14 @@ app.listen(PORT, () => {
   console.log(`Backend running on port ${PORT}`);
   setupInboundWebhook();
   initDialerColumns().catch(err => console.error('Sheet init failed (non-fatal):', err.message));
+  if (process.env.LEAD_GEN_SHEET_ID) {
+    setInterval(() => {
+      syncFromLeadGen()
+        .then(r => { if (r.added > 0) console.log(`[auto-sync] ${r.added} new leads added`); })
+        .catch(err => console.error('[auto-sync] failed:', err.message));
+    }, 30 * 60 * 1000);
+    console.log('[auto-sync] Scheduled every 30 min from Lead Gen Pipeline');
+  }
 });
 
 async function setupInboundWebhook() {

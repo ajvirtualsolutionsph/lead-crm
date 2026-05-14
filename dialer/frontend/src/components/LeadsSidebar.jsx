@@ -10,8 +10,24 @@ const STATUS_COLORS = {
   'Not interested': T.badgeNotInt,
 };
 
-export default function LeadsSidebar({ leads, loading, selectedLead, onSelect, onRefresh, activeSheet, onSwitchSheet }) {
+export default function LeadsSidebar({ leads, loading, selectedLead, onSelect, onRefresh, activeSheet, onSwitchSheet, onSync }) {
   const [query, setQuery] = useState('');
+  const [syncing, setSyncing] = useState(false);
+  const [syncMsg, setSyncMsg] = useState(null);
+
+  async function handleSync() {
+    setSyncing(true);
+    setSyncMsg(null);
+    try {
+      const result = await onSync();
+      setSyncMsg(result.added > 0 ? `+${result.added} new leads` : 'Up to date');
+    } catch {
+      setSyncMsg('Sync failed');
+    } finally {
+      setSyncing(false);
+      setTimeout(() => setSyncMsg(null), 3000);
+    }
+  }
 
   const filtered = leads.filter(l =>
     l.name.toLowerCase().includes(query.toLowerCase()) ||
@@ -60,8 +76,19 @@ export default function LeadsSidebar({ leads, loading, selectedLead, onSelect, o
           >
             ↻
           </button>
+          <button
+            onClick={handleSync}
+            disabled={syncing}
+            title="Sync new leads from Lead Gen Pipeline"
+            style={{ padding: '6px 10px', borderRadius: 4, border: `1px solid ${T.borderStrong}`, background: T.inputBg, cursor: syncing ? 'not-allowed' : 'pointer', fontSize: 13, color: T.accent, opacity: syncing ? 0.6 : 1, whiteSpace: 'nowrap' }}
+          >
+            {syncing ? '…' : '⇩ Sync'}
+          </button>
         </div>
-        <p style={{ margin: 0, fontSize: 12, color: T.textMuted }}>{filtered.length} leads</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <p style={{ margin: 0, fontSize: 12, color: T.textMuted }}>{filtered.length} leads</p>
+          {syncMsg && <p style={{ margin: 0, fontSize: 12, color: syncMsg.includes('failed') ? '#f87171' : '#4ade80' }}>{syncMsg}</p>}
+        </div>
       </div>
 
       {/* Lead list */}

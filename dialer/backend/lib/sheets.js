@@ -59,6 +59,58 @@ export async function updateDialerNotes(rowIndex, notes, sheetName = 'No Reply/D
   });
 }
 
+export async function syncFromLeadGen() {
+  const SOURCE_ID = process.env.LEAD_GEN_SHEET_ID;
+  if (!SOURCE_ID) return { added: 0 };
+
+  let totalAdded = 0;
+
+  for (const tab of SHEET_TABS) {
+    // Read source rows (Lead Gen Pipeline)
+    const srcRes = await sheets.spreadsheets.values.get({
+      spreadsheetId: SOURCE_ID,
+      range: `'${tab}'!A:U`,
+    });
+    const srcRows = (srcRes.data.values || []).slice(1); // skip header
+    if (srcRows.length === 0) continue;
+
+    // Read destination rows (Phone Dialer - Leads)
+    const destRes = await sheets.spreadsheets.values.get({
+      spreadsheetId: SHEET_ID,
+      range: `'${tab}'!A:U`,
+    });
+    const destRows = (destRes.data.values || []).slice(1); // skip header
+
+    // Build duplicate sets from destination
+    const existingPhones = new Set(destRows.map(r => normalizePhone(r[4] || '')).filter(Boolean));
+    const existingNames = new Set(destRows.map(r => (r[1] || r[0] || '').toLowerCase().trim()).filter(Boolean));
+
+    // Filter: skip if phone OR business name already exists
+    const newRows = srcRows.filter(row => {
+      const phone = normalizePhone(row[4] || '');
+      const bizName = (row[1] || row[0] || '').toLowerCase().trim();
+      const phoneMatch = phone && existingPhones.has(phone);
+      const nameMatch = bizName && existingNames.has(bizName);
+      return !phoneMatch && !nameMatch;
+    });
+
+    if (newRows.length === 0) continue;
+
+    await sheets.spreadsheets.values.append({
+      spreadsheetId: SHEET_ID,
+      range: `'${tab}'!A:U`,
+      valueInputOption: 'USER_ENTERED',
+      insertDataOption: 'INSERT_ROWS',
+      requestBody: { values: newRows },
+    });
+
+    console.log(`[sync] "${tab}": +${newRows.length} new leads`);
+    totalAdded += newRows.length;
+  }
+
+  return { added: totalAdded };
+}
+
 export async function updateLead(rowIndex, status, notes, sheetName = 'No Reply/Declined') {
   const now = new Date().toISOString();
   const s = `'${sheetName}'`;

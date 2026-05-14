@@ -61,7 +61,8 @@ SIGNALWIRE_SPACE_URL=        # aj-virtual-solutions.signalwire.com
 SIGNALWIRE_PHONE_NUMBER=     # +12525303318
 GOOGLE_SERVICE_ACCOUNT_EMAIL=
 GOOGLE_PRIVATE_KEY=
-GOOGLE_SHEET_ID=
+GOOGLE_SHEET_ID=             # Phone Dialer - Leads spreadsheet (dedicated dialer sheet)
+LEAD_GEN_SHEET_ID=           # Lead Gen Pipeline spreadsheet (source for auto-sync)
 SUPABASE_URL=
 SUPABASE_ANON_KEY=
 PORT=3001
@@ -84,8 +85,13 @@ cd dialer/backend && node index.js
 cd dialer/frontend && npm run dev
 ```
 
-## Google Sheet — existing spreadsheet (4 tabs)
-Tabs: New Leads | Initial Email Sent | Needs Follow Up | No Reply/Declined
+## Google Sheets
+
+**Two spreadsheets:**
+- **Lead Gen Pipeline** (`LEAD_GEN_SHEET_ID`) — source of truth; leads entered manually here
+- **Phone Dialer - Leads** (`GOOGLE_SHEET_ID`) — dedicated dialer sheet; synced from Lead Gen Pipeline
+
+Tabs (both sheets): New Leads | Initial Email Sent | Needs Follow Up | No Reply/Declined
 
 | Col | Header | Dialer use |
 |-----|--------|------------|
@@ -93,13 +99,12 @@ Tabs: New Leads | Initial Email Sent | Needs Follow Up | No Reply/Declined
 | B | business_name | display name (primary) |
 | E | phone | dial target — auto-normalized to E.164 |
 | F | website | sidebar link |
-| J | notes | existing column — do NOT write here |
-| U | aging_days | existing column — do not overwrite |
+| J | notes | read-only display |
 | V | call_status | dialer disposition (New/Called/Callback/Not interested) |
 | W | last_called | ISO timestamp of last dialer call |
 | X | dialer_notes | editable notes per lead; auto-saved by dialer |
 
-`getLeads(sheetName)` reads `'SheetName'!A:X`. `updateLead(rowIndex, status, notes, sheetName)` writes V, W, X. `updateDialerNotes(rowIndex, notes, sheetName)` writes X only (used for auto-save without touching status/timestamp). Column X initialized via `initDialerColumns()` on backend startup.
+`getLeads(sheetName)` reads `'SheetName'!A:X`. `updateLead(rowIndex, status, notes, sheetName)` writes V, W, X. `updateDialerNotes(rowIndex, notes, sheetName)` writes X only (auto-save). `syncFromLeadGen()` pulls new rows from Lead Gen Pipeline into Phone Dialer - Leads, skipping duplicates by phone OR business name.
 
 ## Supabase calls table
 ```sql
@@ -118,6 +123,7 @@ GET  /leads?sheet=                   — fetch leads for a tab
 GET  /leads/tabs                     — list sheet tab names
 PATCH /leads/:rowIndex               — update status + notes + last_called (post-call)
 PATCH /leads/:rowIndex/notes         — update notes only (auto-save, no status change)
+POST /leads/sync                     — pull new leads from Lead Gen Pipeline (dedup by phone OR name)
 POST /calls/initiate                 — start outbound call to lead
 POST /calls/hangup                   — hang up active call
 GET  /calls/status                   — poll call state (disposition, elapsed)
@@ -148,6 +154,8 @@ POST /calls/status-callback (webhook)— SignalWire status events (AMD, no-answe
 ---
 
 ## Next
+- [ ] **Add LEAD_GEN_SHEET_ID to Render** — env var must be set for auto-sync to run in production
+- [ ] **Test sync** — add a lead to Lead Gen Pipeline, click ⇩ Sync in the dialer, verify it appears
 - [ ] **Test AMD** — call a voicemail number, confirm "Voicemail" logs within 5s
 - [ ] **Real dialing session** — work through actual leads at scale
 - [ ] **Change UptimeRobot to 1-min interval** — via UptimeRobot dashboard (currently 5 min)

@@ -18,7 +18,7 @@ const DISPOSITION_LABELS = {
 
 export default function App() {
   const sw = useSignalWire();
-  const { leads, loading, selectedLead, setSelectedLead, fetchLeads, activeSheet, switchSheet } = useLeads();
+  const { leads, loading, selectedLead, setSelectedLead, fetchLeads, activeSheet, switchSheet, syncLeads } = useLeads();
   const [callLogKey, setCallLogKey] = useState(0);
 
   // Post-call state (lifted from Dialer)
@@ -153,6 +153,11 @@ export default function App() {
           onRefresh={fetchLeads}
           activeSheet={activeSheet}
           onSwitchSheet={switchSheet}
+          onSync={async () => {
+            const result = await syncLeads();
+            fetchLeads(activeSheet);
+            return result;
+          }}
         />
 
         {/* Column 2: Notes */}
