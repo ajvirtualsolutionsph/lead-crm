@@ -185,8 +185,20 @@ POST /calls/status-callback (webhook)— SignalWire status events (AMD, no-answe
 - Fixed CORS: backend now allows `localhost:5174` alongside `localhost:5173` (frontend port drift when both instances run)
 - `selectedLead` prop added to `NotesPanel` via `App.jsx`
 
+## Session 18 — Website preview in Lead Details (2026-05-14)
+- Lead Details pane restructured: script pane narrowed to 35%, details pane gets 65%
+- Compact 2-column grid for lead fields (Business/Phone, Email/Category, etc.) saves vertical space
+- Website iframe embedded in Lead Details pane — always visible, fills all remaining height below the fields
+- Website URL bar shows the link with ↗ open-in-new-tab; "No website on file" shown when absent
+- Fallback message shown when site blocks iframe embedding (X-Frame-Options)
+- `webPreviewError` state resets when switching leads
+- Removed Recent Calls section from Col 3 (CallLog no longer rendered)
+- `react-resizable-panels` was attempted but reverted — too disruptive
+- **Files changed:** `dialer/frontend/src/App.jsx`, `dialer/frontend/src/components/NotesPanel.jsx`
+
 ## Next
-- [ ] **Deploy session 17 changes** — push backend to Render, frontend to Vercel
+- [ ] **Deploy session 18 changes** — push frontend to Vercel (backend unchanged)
+- [ ] **Deploy session 17 backend changes** — push backend to Render (sheets.js, index.js)
 - [ ] **Test sync** — click ⇩ Sync in the dialer, verify leads appear correctly
 - [ ] **Test AMD** — call a voicemail number, confirm "Voicemail" logs within 5s
 - [ ] **Real dialing session** — work through actual leads at scale

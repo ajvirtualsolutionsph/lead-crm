@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { T } from '../theme.js';
 
 const SCRIPT = [
@@ -109,6 +110,9 @@ export default function NotesPanel({
   status,
   selectedLead,
 }) {
+  const [webPreviewError, setWebPreviewError] = useState(false);
+  useEffect(() => { setWebPreviewError(false); }, [selectedLead?.rowIndex]);
+
   return (
     <div style={{
       flex: 1,
@@ -227,77 +231,74 @@ export default function NotesPanel({
 
       {/* Divider with column headers */}
       <div style={{ borderTop: `2px solid ${T.borderStrong}`, display: 'flex', flexShrink: 0, background: T.sidebarBg }}>
-        <div style={{ flex: 1, padding: '6px 16px', borderRight: `1px solid ${T.borderStrong}` }}>
-          <span style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-            Cold Calling Script
-          </span>
+        <div style={{ flex: '0 0 35%', padding: '6px 16px', borderRight: `1px solid ${T.borderStrong}` }}>
+          <span style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Cold Calling Script</span>
         </div>
         <div style={{ flex: 1, padding: '6px 16px' }}>
-          <span style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-            Lead Details
-          </span>
+          <span style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Lead Details</span>
         </div>
       </div>
 
-      {/* Bottom half — two equal panes */}
+      {/* Bottom half — script (35%) + lead details (65%) */}
       <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
 
         {/* Left pane — script */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 14, borderRight: `1px solid ${T.borderStrong}` }}>
+        <div style={{ flex: '0 0 35%', overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 14, borderRight: `1px solid ${T.borderStrong}` }}>
           {SCRIPT.map((section, i) => (
             <div key={i}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: T.textPrimary, marginBottom: 6 }}>
-                {section.title}
-              </div>
-              <pre style={{
-                margin: 0,
-                fontFamily: 'system-ui, sans-serif',
-                fontSize: 12,
-                lineHeight: 1.65,
-                color: T.textMuted,
-                whiteSpace: 'pre-wrap',
-                wordBreak: 'break-word',
-                background: T.inputBg,
-                border: `1px solid ${T.borderMuted}`,
-                borderRadius: 6,
-                padding: '8px 10px',
-              }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.textPrimary, marginBottom: 5 }}>{section.title}</div>
+              <pre style={{ margin: 0, fontFamily: 'system-ui, sans-serif', fontSize: 11, lineHeight: 1.55, color: T.textMuted, whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: T.inputBg, border: `1px solid ${T.borderMuted}`, borderRadius: 6, padding: '6px 8px' }}>
                 {section.content}
               </pre>
             </div>
           ))}
         </div>
 
-        {/* Right pane — lead details */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {!selectedLead ? (
-            <div style={{ color: T.textMuted, fontStyle: 'italic', fontSize: 13, marginTop: 8 }}>
-              No lead selected
-            </div>
-          ) : (
-            DETAIL_FIELDS.filter(f => selectedLead[f.key]).map(f => (
-              <div key={f.key} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-                  {f.label}
-                </div>
-                <div style={{
-                  fontSize: 12,
-                  color: T.textPrimary,
-                  background: T.inputBg,
-                  border: `1px solid ${T.borderMuted}`,
-                  borderRadius: 4,
-                  padding: '5px 8px',
-                  wordBreak: 'break-word',
-                  lineHeight: 1.5,
-                }}>
-                  {f.key === 'website'
-                    ? <a href={selectedLead[f.key]} target="_blank" rel="noreferrer" style={{ color: '#38bdf8', textDecoration: 'none' }}>{selectedLead[f.key]}</a>
-                    : selectedLead[f.key]
-                  }
-                </div>
+        {/* Right pane — lead details (flex column) */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+
+          {/* Compact fields — 2-column grid */}
+          <div style={{ flexShrink: 0, padding: '6px 12px', borderBottom: `1px solid ${T.borderStrong}` }}>
+            {!selectedLead ? (
+              <span style={{ color: T.textMuted, fontStyle: 'italic', fontSize: 12 }}>No lead selected</span>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px 8px' }}>
+                {DETAIL_FIELDS.filter(f => f.key !== 'website' && selectedLead[f.key]).map(f => (
+                  <div key={f.key} style={{ display: 'flex', gap: 4, alignItems: 'baseline', minWidth: 0 }}>
+                    <span style={{ flex: '0 0 52px', color: T.textMuted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', fontSize: 10 }}>{f.label}</span>
+                    <span style={{ color: T.textPrimary, fontSize: 11, lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selectedLead[f.key]}</span>
+                  </div>
+                ))}
               </div>
-            ))
-          )}
+            )}
+          </div>
+
+          {/* Website iframe — fills remaining space */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+            <div style={{ flexShrink: 0, padding: '4px 10px', borderBottom: `1px solid ${T.borderStrong}`, background: T.sidebarBg, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 11, color: '#94a3b8', flexShrink: 0 }}>Website:</span>
+              {selectedLead?.website ? (
+                <a href={selectedLead.website} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: '#38bdf8', textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {selectedLead.website} ↗
+                </a>
+              ) : (
+                <span style={{ fontSize: 11, color: T.textMuted, fontStyle: 'italic' }}>No website on file</span>
+              )}
+            </div>
+            <div style={{ flex: 1, position: 'relative', background: '#0f172a' }}>
+              {!selectedLead?.website ? (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: T.textMuted, fontSize: 12, fontStyle: 'italic' }}>No website on file</div>
+              ) : webPreviewError ? (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', padding: 16, textAlign: 'center', fontSize: 12, color: T.textMuted, flexDirection: 'column', gap: 8 }}>
+                  <span>This site blocks embedded previews.</span>
+                  <a href={selectedLead.website} target="_blank" rel="noreferrer" style={{ color: '#38bdf8', textDecoration: 'none' }}>Open in new tab ↗</a>
+                </div>
+              ) : (
+                <iframe key={selectedLead.website} src={selectedLead.website} title="Website Preview" style={{ width: '100%', height: '100%', border: 'none', display: 'block' }} sandbox="allow-scripts allow-same-origin allow-forms" onError={() => setWebPreviewError(true)} />
+              )}
+            </div>
+          </div>
+
         </div>
 
       </div>

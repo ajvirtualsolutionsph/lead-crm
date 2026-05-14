@@ -6,7 +6,6 @@ import StatusBar from './components/StatusBar.jsx';
 import LeadsSidebar from './components/LeadsSidebar.jsx';
 import NotesPanel from './components/NotesPanel.jsx';
 import Dialer from './components/Dialer.jsx';
-import CallLog from './components/CallLog.jsx';
 import { T } from './theme.js';
 
 const DISPOSITION_LABELS = {
@@ -176,7 +175,7 @@ export default function App() {
           selectedLead={selectedLead}
         />
 
-        {/* Column 3: Dialpad + Call Log */}
+        {/* Column 3: Dialpad */}
         <div style={{ width: 270, display: 'flex', flexDirection: 'column', borderLeft: `1px solid ${T.borderMuted}`, overflowY: 'auto', background: T.appBg }}>
           <div style={{ padding: 16 }}>
             <Dialer
@@ -185,9 +184,6 @@ export default function App() {
               onCallStart={handleCallStart}
               onCallEnd={handleCallEnd}
             />
-          </div>
-          <div style={{ borderTop: `1px solid ${T.borderMuted}` }}>
-            <CallLog refreshKey={callLogKey} />
           </div>
         </div>
 
