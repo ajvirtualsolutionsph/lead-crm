@@ -19,7 +19,7 @@ const DISPOSITION_LABELS = {
 };
 
 export default function Dialer({ sw, selectedLead, onCallLogged, leads, setSelectedLead, transcript, interimText }) {
-  const { status, callDuration, isMuted, makeCall, hangUp, toggleMute, serverDisposition, clearDisposition } = sw;
+  const { status, callDuration, makeCall, hangUp, serverDisposition, clearDisposition } = sw;
   const [number, setNumber] = useState('');
   const [outcome, setOutcome] = useState('Answered');
   const [notes, setNotes] = useState('');
@@ -156,20 +156,12 @@ export default function Dialer({ sw, selectedLead, onCallLogged, leads, setSelec
           </button>
         )}
         {isActive && (
-          <>
-            <button
-              onClick={handleHangUp}
-              style={{ flex: 1, padding: 14, background: T.hangupRed, color: T.textInverted, border: 'none', borderRadius: 6, fontSize: 16, cursor: 'pointer' }}
-            >
-              Hang Up
-            </button>
-            <button
-              onClick={toggleMute}
-              style={{ padding: '14px 18px', background: isMuted ? T.mutedGrey : T.muteActiveBg, border: `1px solid ${T.borderStrong}`, borderRadius: 6, fontSize: 14, cursor: 'pointer', color: T.textPrimary }}
-            >
-              {isMuted ? 'Unmute' : 'Mute'}
-            </button>
-          </>
+          <button
+            onClick={handleHangUp}
+            style={{ flex: 1, padding: 14, background: T.hangupRed, color: T.textInverted, border: 'none', borderRadius: 6, fontSize: 16, cursor: 'pointer' }}
+          >
+            Hang Up
+          </button>
         )}
       </div>
 

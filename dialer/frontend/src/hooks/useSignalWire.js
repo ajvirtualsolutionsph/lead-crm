@@ -4,7 +4,6 @@ import axios from 'axios';
 export function useSignalWire() {
   const [status, setStatus] = useState('ready');
   const [callDuration, setCallDuration] = useState(0);
-  const [isMuted, setIsMuted] = useState(false);
   const [transcript, setTranscript] = useState([]);
   const [interimText, setInterimText] = useState('');
   const [serverDisposition, setServerDisposition] = useState(null);
@@ -90,7 +89,6 @@ export function useSignalWire() {
     if (!phoneNumber) return;
     try {
       setStatus('connecting');
-      setIsMuted(false);
       setTranscript([]);
       setInterimText('');
       setServerDisposition(null);
@@ -124,8 +122,6 @@ export function useSignalWire() {
     } catch (e) { console.error('Hangup error:', e.message); }
   }, []);
 
-  const toggleMute = useCallback(() => setIsMuted(m => !m), []);
-
   const clearTranscript = useCallback(() => {
     setTranscript([]);
     setInterimText('');
@@ -134,7 +130,7 @@ export function useSignalWire() {
   const clearDisposition = useCallback(() => setServerDisposition(null), []);
 
   return {
-    status, callDuration, isMuted, makeCall, hangUp, toggleMute,
+    status, callDuration, makeCall, hangUp,
     transcript, interimText, clearTranscript,
     serverDisposition, clearDisposition,
   };

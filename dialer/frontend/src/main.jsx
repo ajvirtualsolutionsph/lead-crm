@@ -6,6 +6,9 @@ import App from './App.jsx';
 if (import.meta.env.VITE_BACKEND_URL) {
   axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
 }
+if (import.meta.env.VITE_API_SECRET) {
+  axios.defaults.headers.common['x-api-key'] = import.meta.env.VITE_API_SECRET;
+}
 
 // Wake up the Render backend on page load so it's warm before the first call
 axios.get('/health').catch(() => {});
