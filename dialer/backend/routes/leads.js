@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getLeads, updateLead, updateDialerNotes, syncFromLeadGen, archiveNoAnswer, SHEET_TABS } from '../lib/sheets.js';
+import { getLeads, updateLead, updateDialerNotes, updateLeadField, syncFromLeadGen, archiveNoAnswer, SHEET_TABS } from '../lib/sheets.js';
 
 const router = Router();
 
@@ -45,6 +45,19 @@ router.patch('/:rowIndex', async (req, res) => {
   } catch (err) {
     console.error('Lead update error:', err);
     res.status(500).json({ error: 'Failed to update lead' });
+  }
+});
+
+// Update any editable lead field (cols A–H) — used by the CRM detail form
+router.patch('/:rowIndex/info', async (req, res) => {
+  try {
+    const rowIndex = parseInt(req.params.rowIndex, 10);
+    const { field, value, sheet } = req.body;
+    await updateLeadField(rowIndex, field, value, sheet);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Lead field update error:', err);
+    res.status(400).json({ error: err.message || 'Failed to update field' });
   }
 });
 

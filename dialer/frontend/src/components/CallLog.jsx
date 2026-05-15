@@ -1,67 +1,109 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { T } from '../theme.js';
 
-function formatDuration(secs) {
-  if (!secs) return '—';
-  const m = Math.floor(secs / 60);
-  const s = secs % 60;
-  return m > 0 ? `${m}m ${s}s` : `${s}s`;
+const OUTCOMES = ['Answered', 'No Answer', 'Voicemail', 'Busy', 'Callback Requested', 'Not Interested'];
+
+function formatDate(iso) {
+  if (!iso) return '';
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
-function formatTime(iso) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleString();
-}
-
-export default function CallLog({ refreshKey }) {
-  const [calls, setCalls] = useState([]);
+export default function CallLog({ outcome, setOutcome, saving, onSave, selectedLead, refreshKey }) {
+  const [recentCalls, setRecentCalls] = useState([]);
 
   useEffect(() => {
     axios.get('/calls')
-      .then(r => setCalls(r.data))
-      .catch(err => console.error('Failed to fetch call log:', err));
+      .then(r => setRecentCalls(r.data))
+      .catch(() => {});
   }, [refreshKey]);
 
   return (
-    <div style={{ padding: 20, background: T.panelBg, borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.4)', marginTop: 16 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-        <h2 style={{ margin: 0, fontSize: 18, color: T.textPrimary }}>Recent Calls</h2>
-        {calls.length > 0 && (
-          <button
-            onClick={() => setCalls([])}
-            style={{ padding: '4px 10px', fontSize: 12, background: 'transparent', border: `1px solid ${T.borderStrong}`, borderRadius: 4, color: T.textMuted, cursor: 'pointer' }}
-          >
-            Clear
-          </button>
+    <div style={{ width: 270, display: 'flex', flexDirection: 'column', borderLeft: `1px solid ${T.borderMuted}`, background: T.appBg }}>
+
+      {/* Log a call section */}
+      <div style={{ padding: 14, borderBottom: `1px solid ${T.borderMuted}` }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 10 }}>
+          Log a Call
+        </div>
+
+        {!selectedLead ? (
+          <div style={{ color: T.textMuted, fontSize: 12, fontStyle: 'italic' }}>Select a lead to log a call</div>
+        ) : (
+          <>
+            <div style={{ fontSize: 13, fontWeight: 600, color: T.textPrimary, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {selectedLead.name}
+            </div>
+            <div style={{ fontSize: 12, color: '#38bdf8', marginBottom: 12, fontFamily: 'monospace' }}>
+              {selectedLead.phone}
+            </div>
+
+            <div style={{ fontSize: 11, color: T.textMuted, marginBottom: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Outcome</div>
+            <select
+              value={outcome}
+              onChange={e => setOutcome(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '7px 8px',
+                marginBottom: 10,
+                borderRadius: 4,
+                border: `1px solid ${T.borderStrong}`,
+                background: T.inputBg,
+                color: T.textPrimary,
+                fontSize: 13,
+              }}
+            >
+              {OUTCOMES.map(o => <option key={o}>{o}</option>)}
+            </select>
+
+            <button
+              onClick={onSave}
+              disabled={saving}
+              style={{
+                width: '100%',
+                padding: 10,
+                background: T.saveBlue,
+                color: T.textInverted,
+                border: 'none',
+                borderRadius: 6,
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: saving ? 'not-allowed' : 'pointer',
+                opacity: saving ? 0.6 : 1,
+              }}
+            >
+              {saving ? 'Saving…' : 'Save & Next Lead'}
+            </button>
+          </>
         )}
       </div>
-      {calls.length === 0 ? (
-        <p style={{ color: T.textMuted, fontSize: 13 }}>No calls yet.</p>
-      ) : (
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-            <thead>
-              <tr style={{ borderBottom: `2px solid ${T.borderStrong}`, textAlign: 'left' }}>
-                {['Name','Phone','Duration','Status','Time'].map(h => (
-                  <th key={h} style={{ padding: '4px 8px', color: T.textMuted, fontWeight: 600 }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {calls.map(c => (
-                <tr key={c.id} style={{ borderBottom: `1px solid ${T.borderMuted}` }}>
-                  <td style={{ padding: '6px 8px', color: T.textPrimary }}>{c.lead_name || '—'}</td>
-                  <td style={{ padding: '6px 8px', color: T.textPrimary }}>{c.phone}</td>
-                  <td style={{ padding: '6px 8px', color: T.textPrimary }}>{formatDuration(c.duration_seconds)}</td>
-                  <td style={{ padding: '6px 8px', color: T.textPrimary }}>{c.status}</td>
-                  <td style={{ padding: '6px 8px', color: T.textMuted }}>{formatTime(c.called_at)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+
+      {/* Recent calls */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: 14 }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 10 }}>
+          Recent Calls
         </div>
-      )}
+        {recentCalls.length === 0 ? (
+          <div style={{ color: T.textMuted, fontSize: 12, fontStyle: 'italic' }}>No calls logged yet</div>
+        ) : (
+          recentCalls.map(call => (
+            <div key={call.id} style={{ marginBottom: 10, paddingBottom: 10, borderBottom: `1px solid ${T.borderMuted}` }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: T.textPrimary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {call.lead_name || call.phone}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
+                <span style={{ fontSize: 11, color: T.textMuted }}>{call.status}</span>
+                <span style={{ fontSize: 11, color: T.textMuted }}>{formatDate(call.called_at)}</span>
+              </div>
+              {call.notes && (
+                <div style={{ fontSize: 11, color: T.textMuted, marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontStyle: 'italic' }}>
+                  {call.notes}
+                </div>
+              )}
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 }

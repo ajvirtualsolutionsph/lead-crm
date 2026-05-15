@@ -58,6 +58,22 @@ export async function getLeads(sheetName = 'Ready for Call') {
   }));
 }
 
+const FIELD_COL = {
+  name: 'A', business_name: 'B', category: 'C', address: 'D',
+  phone: 'E', website: 'F', email: 'G', operating_hours: 'H',
+};
+
+export async function updateLeadField(rowIndex, field, value, sheetName = 'Ready for Call') {
+  const col = FIELD_COL[field];
+  if (!col) throw new Error(`Unknown field: ${field}`);
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: SHEET_ID,
+    range: `'${sheetName}'!${col}${rowIndex}`,
+    valueInputOption: 'USER_ENTERED',
+    requestBody: { values: [[value]] },
+  });
+}
+
 export async function updateDialerNotes(rowIndex, notes, sheetName = 'Ready for Call') {
   await sheets.spreadsheets.values.batchUpdate({
     spreadsheetId: SHEET_ID,
