@@ -117,12 +117,12 @@ export async function syncFromLeadGen() {
   const srcRows = (srcRes.data.values || []).slice(1);
   if (srcRows.length === 0) return { added: 0 };
 
-  // Read destination rows for dedup check
-  const destRes = await sheets.spreadsheets.values.get({
-    spreadsheetId: SHEET_ID,
-    range: `'${DEST_TAB}'!A:U`,
-  });
-  const destRows = (destRes.data.values || []).slice(1);
+  // Read destination rows + Second Attempt for dedup (so archived leads don't get re-synced)
+  const [destRes, saRes] = await Promise.all([
+    sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: `'${DEST_TAB}'!A:U` }),
+    sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: `'Second Attempt'!A:U` }).catch(() => ({ data: { values: [] } })),
+  ]);
+  const destRows = [...(destRes.data.values || []).slice(1), ...(saRes.data.values || []).slice(1)];
 
   const existingPhones = new Set(destRows.map(r => normalizePhone(r[4] || '')).filter(Boolean));
   const existingNames = new Set(destRows.map(r => (r[1] || r[0] || '').toLowerCase().trim()).filter(Boolean));
