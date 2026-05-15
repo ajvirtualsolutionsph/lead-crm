@@ -1,81 +1,64 @@
-# PH-to-US Dialer
+# AJ Virtual Solutions CRM
 
-Browser-based softphone to call US numbers from the Philippines. SignalWire WebRTC for calls, Google Sheets for leads, Supabase for call logging.
+Lead management CRM for cold calling US businesses from the Philippines. Agent calls leads directly via Viber Out. Google Sheets for leads, Supabase for call logging.
 
 ## Stack
 - Backend: Node.js + Express (ES modules), port 3001 — deploy to Render
 - Frontend: React + Vite, port 5173 — deploy to Vercel
-- Telephony: SignalWire Call Fabric v3 (`@signalwire/js`, `@signalwire/node`)
 - Leads: Google Sheets API v4
 - Call log: Supabase (Postgres)
+- Calls: Agent dials leads directly via **Viber Out** (no telephony SDK in the app)
 
 ## Structure
 ```
 dialer/
 ├── backend/
 │   ├── index.js
-│   ├── routes/       token.js, leads.js, calls.js
+│   ├── routes/       leads.js, calls.js
 │   ├── lib/          sheets.js, supabase.js
 │   └── .env          ← never commit
 └── frontend/
     └── src/
-        ├── components/   Dialer.jsx, LeadsSidebar.jsx, NotesPanel.jsx, CallLog.jsx, StatusBar.jsx
-        └── hooks/        useSignalWire.js, useLeads.js
+        ├── components/   LeadsSidebar.jsx, NotesPanel.jsx, CallLog.jsx, StatusBar.jsx
+        └── hooks/        useLeads.js
 ```
 
-## Call Architecture — Agent-Calls-In Conference Bridge
-- No WebRTC in browser — pure REST + LaML conference
-- Call flow: `POST /calls/initiate { to, leadName, rowIndex, sheetName }` → backend dials lead only → lead hears hold music → agent dials +12525303318 from their phone → both bridged
-- Lead TwiML: `<Conference startConferenceOnEnter="false" endConferenceOnExit="true">` — lead hears hold music until agent joins
-- Agent TwiML: `<Conference startConferenceOnEnter="true" endConferenceOnExit="true">` — served via `POST /calls/inbound` webhook when agent calls in
-- Hang up: `POST /calls/hangup { callSid: leadCallSid }` — clears `callState`
-- `callState` object stored in memory on backend (confName, leadCallSid, leadPhone, leadName, rowIndex, sheetName, disposition, startedAt) — single-agent dialer, one call at a time
-- Backend auto-configures SignalWire inbound webhook on startup via `RENDER_EXTERNAL_URL`
-- **Ring timeout**: `Timeout: '25'` — SignalWire auto-terminates if lead doesn't answer in 25s
-- **AMD**: `MachineDetection: 'Enable'` — voicemail detected in 3–5s, call auto-hung up
-- **StatusCallback**: `POST /calls/status-callback` — auto-logs No Answer / Busy / Voicemail / Failed to Supabase + Sheets
-- **Status polling**: `GET /calls/status` — frontend polls every 3s while in-call; on auto-termination shows toast and skips to next lead
-- **Why agent-calls-in**: SignalWire international dialing to +63 blocked; agent calling a US number works from any VoIP app
-- **Why not WebRTC**: Philippines ISP blocks UDP → ICE connectivity times out (see WebRTC history below)
+## Workflow
+1. Select a lead in the CRM → view their details
+2. Call them directly via Viber Out (app is not involved in the call itself)
+3. After the call, select outcome + add notes in the app
+4. Click **Save & Next** → logs to Supabase + updates Google Sheets (cols V, W, X)
 
-## WebRTC investigation history (session 3)
-1. Tried `client.dial({ to: phoneNumber })` via Call Fabric subscriber token — "Invalid RTCPeer ID"
-2. Tried `Video.RoomSession` + `<Connect><Room>` TwiML — PSTN leg worked, browser ICE timed out (UDP blocked)
-3. Microphone fix: must call `getUserMedia()` before `SignalWire()` init
-4. Root cause: Philippines ISP blocks UDP; TURN relay candidates not gathered
-5. Solution: PSTN conference bridge — no browser audio needed
+## Why SignalWire was removed (session 20)
+- Agent has Viber Out subscription → can call US numbers directly from Philippines
+- The old conference bridge (agent dials +12525303318 to join) was double work
+- SignalWire blocks +63 dialing, WebRTC blocked by PH ISP — bridge was the only option, now irrelevant
+- AMD / auto-voicemail detection removed; dispositions logged manually via outcome form
 
-## UI Layout (session 12)
+## UI Layout (session 20)
 Three-column layout:
-- **Col 1 — Leads** (280px): sheet tabs, search, lead list
-- **Col 2 — Notes** (flex): persistent notes textarea + live transcription during call + outcome form post-call
-- **Col 3 — Dialpad** (270px): compact phone input, dialpad, Call/Hang Up, join-call banner, live timer, recent calls log
+- **Col 1 — Leads** (280px): sheet tabs, search, lead list with status badges
+- **Col 2 — Notes + Details** (flex): notes textarea (auto-save) → editable lead detail fields → website iframe
+- **Col 3 — Call Log** (270px): outcome dropdown + Save & Next + recent calls list
 
-Notes auto-save to Google Sheets col X (1.5s debounce after typing stops). Selecting a lead loads its saved notes. Notes persist across page sessions via the sheet.
+Notes auto-save to Google Sheets col X (1.5s debounce). Lead detail fields (business, phone, email, category, address, hours) are editable inputs — save on blur via `PATCH /leads/:rowIndex/info`. Website field is also editable. Selecting a lead loads their saved notes and populates all fields.
 
 ## Backend .env
 ```
-SIGNALWIRE_PROJECT_ID=
-SIGNALWIRE_API_TOKEN=
-SIGNALWIRE_SPACE_URL=        # aj-virtual-solutions.signalwire.com
-SIGNALWIRE_PHONE_NUMBER=     # +12525303318
 GOOGLE_SERVICE_ACCOUNT_EMAIL=
 GOOGLE_PRIVATE_KEY=
-GOOGLE_SHEET_ID=             # Ready for Call spreadsheet (dedicated dialer sheet, single tab)
+GOOGLE_SHEET_ID=             # Ready for Call spreadsheet (dedicated dialer sheet)
 LEAD_GEN_SHEET_ID=           # Lead Gen Pipeline spreadsheet (source for auto-sync)
 SUPABASE_URL=
 SUPABASE_ANON_KEY=
 PORT=3001
 FRONTEND_URL=http://localhost:5173
 API_SECRET=                  # shared secret — must match VITE_API_SECRET in frontend
-RENDER_EXTERNAL_URL=         # set automatically by Render
 ```
 
 ## Frontend .env
 ```
 VITE_BACKEND_URL=http://localhost:3001
-VITE_SIGNALWIRE_SPACE_URL=aj-virtual-solutions.signalwire.com
-VITE_SIGNALWIRE_FROM_NUMBER=+12525303318
 VITE_API_SECRET=             # shared secret — must match API_SECRET in backend
 ```
 
@@ -112,7 +95,7 @@ cd dialer/frontend && npm run dev
 | W | last_called | ISO timestamp of last dialer call — WRITE |
 | X | dialer_notes | editable notes per lead; auto-saved by dialer — WRITE |
 
-`getLeads(sheetName)` reads `'Ready for Call'!A:X`. `updateLead(rowIndex, status, notes, sheetName)` writes V, W, X. `updateDialerNotes(rowIndex, notes, sheetName)` writes X only (auto-save). `syncFromLeadGen()` pulls "Ready for Call" tab rows (A:U) from Lead Gen Pipeline, deduplicates by phone OR business name, appends to dialer sheet.
+`getLeads(sheetName)` reads `'Ready for Call'!A:X`. `updateLead(rowIndex, status, notes, sheetName)` writes V, W, X. `updateDialerNotes(rowIndex, notes, sheetName)` writes X only (auto-save). `updateLeadField(rowIndex, field, value, sheetName)` writes any single col A–H (editable CRM fields). `syncFromLeadGen()` pulls "Ready for Call" tab rows (A:U) from Lead Gen Pipeline, deduplicates by phone OR business name against **all dialer tabs** (prevents re-adding archived leads), appends to dialer sheet.
 
 ## Supabase calls table
 ```sql
@@ -130,24 +113,18 @@ GET  /health                         — uptime check
 GET  /leads?sheet=                   — fetch leads for a tab
 GET  /leads/tabs                     — list sheet tab names
 PATCH /leads/:rowIndex               — update status + notes + last_called (post-call)
-PATCH /leads/:rowIndex/notes         — update notes only (auto-save, no status change)
-POST /leads/sync                     — pull new leads from Lead Gen Pipeline (dedup by phone OR name)
-POST /calls/initiate                 — start outbound call to lead
-POST /calls/hangup                   — hang up active call
-GET  /calls/status                   — poll call state (disposition, elapsed)
+PATCH /leads/:rowIndex/notes         — update notes only (auto-save, col X)
+PATCH /leads/:rowIndex/info          — update any editable lead field (cols A–H)
+POST /leads/sync                     — pull new leads from Lead Gen Pipeline (dedup by phone OR name across all tabs)
+POST /leads/archive-no-answer        — move No Answer leads from Ready for Call → Second Attempt
 GET  /calls                          — recent calls from Supabase
-POST /calls                          — log a completed call to Supabase + Sheets
-POST /calls/inbound    (webhook)     — agent joins conference
-POST /calls/status-callback (webhook)— SignalWire status events (AMD, no-answer, etc.)
+POST /calls                          — log a completed call to Supabase + Sheets (cols V, W, X)
 ```
 
 ## Security
-- `x-api-key` header required on all `/calls/*` and `/leads/*` routes; SignalWire webhooks exempted
+- `x-api-key` header required on all `/calls/*` and `/leads/*` routes
 - Helmet.js security headers
-- Rate limit: `POST /calls/initiate` capped at 20 req/min per IP
-- HMAC-SHA1 webhook signature validation (production only)
-- E.164 phone number validation before dialing
-- Env var startup check — backend exits if any required var is missing
+- Env var startup check — backend exits if Google/Supabase vars are missing
 
 ## Deployment
 - Backend: https://phone-dialer-shl2.onrender.com (Render, free tier)
@@ -155,9 +132,10 @@ POST /calls/status-callback (webhook)— SignalWire status events (AMD, no-answe
 - UptimeRobot: pings `/health` every 5 min to keep Render awake
 
 ## Agent workflow
-- Agent joins calls by dialing **+12525303318** via **Viber Out** from PH phone
+- Agent dials leads directly from **Viber Out** (uses their Viber Out subscription to call US numbers)
 - Best window: **9–11 PM PHT** = 9–11 AM US Eastern (East Coast leads first)
 - West Coast leads require midnight+ PHT
+- After each call: select outcome in CRM → add notes → Save & Next
 
 ---
 
@@ -202,13 +180,19 @@ POST /calls/status-callback (webhook)— SignalWire status events (AMD, no-answe
 - Notes are always editable before and after a call; existing dialer_notes load correctly when selecting any lead
 - **Files changed:** `dialer/frontend/src/App.jsx`
 
+## Session 20 — Remove SignalWire, convert to CRM (2026-05-15)
+- Removed SignalWire entirely — agent now calls leads directly via Viber Out
+- Removed: `useSignalWire.js`, `Dialer.jsx`, all call-lifecycle backend routes (initiate, hangup, status, inbound, status-callback, callState)
+- Added: `PATCH /leads/:rowIndex/info` + `updateLeadField()` — editable lead detail fields in UI
+- UI: Col 3 is now a Call Log panel (outcome select + Save & Next + recent calls); Col 2 NotesPanel has editable lead details with auto-save on blur
+- Sync fix: dedup now checks ALL dialer tabs (not just Ready for Call) so archived leads don't get re-synced
+- Duplicate fix: removed 10 leads from Ready for Call that were already in Second Attempt
+- **Files changed:** `backend/routes/calls.js`, `backend/routes/leads.js`, `backend/lib/sheets.js`, `backend/index.js`, `frontend/src/App.jsx`, `frontend/src/components/NotesPanel.jsx`, `frontend/src/components/CallLog.jsx`, `frontend/src/components/StatusBar.jsx`
+
 ## Next
-- [ ] **Deploy session 18 + 19 frontend changes** — push App.jsx, NotesPanel.jsx to Vercel
-- [ ] **Deploy session 17 backend changes** — push backend to Render (sheets.js, index.js)
-- [ ] **Test sync** — click ⇩ Sync in the dialer, verify leads appear correctly
-- [ ] **Test AMD** — call a voicemail number, confirm "Voicemail" logs within 5s
-- [ ] **Real dialing session** — work through actual leads at scale
+- [ ] **Test editable lead fields** — edit a field, verify it saves to Google Sheets
+- [ ] **Test Save & Next** — log a call, confirm it appears in Supabase + Sheets cols V/W/X
+- [ ] **Real calling session** — work through leads at scale with new workflow
 - [ ] **Change UptimeRobot to 1-min interval** — via UptimeRobot dashboard (currently 5 min)
 - [ ] **GitHub profile** — add repo descriptions, topics, README (via GitHub web UI)
-- [ ] **Optional**: when SignalWire enables +63 dialing, agent can receive calls directly
-- [ ] **Later**: investigate WebRTC audio (needs TURN relay or different ISP)
+- [ ] **Phase 2 CRM** — per-lead call history view, status filter, better lead browsing
