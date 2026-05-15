@@ -281,10 +281,10 @@ export default function NotesPanel({ notes, setNotes, selectedLead }) {
                 width: '100%',
                 textAlign: 'left',
                 padding: '7px 14px',
-                background: openSection === i ? '#1e293b' : 'transparent',
+                background: openSection === i ? T.inputBg : 'transparent',
                 border: 'none',
                 cursor: 'pointer',
-                color: openSection === i ? '#f1f5f9' : T.textSecondary,
+                color: openSection === i ? T.textPrimary : T.textMuted,
                 fontSize: 12,
                 fontWeight: 600,
                 display: 'flex',
@@ -298,12 +298,13 @@ export default function NotesPanel({ notes, setNotes, selectedLead }) {
             {openSection === i && (
               <div style={{
                 padding: '8px 14px 12px',
-                background: '#0f172a',
-                color: '#cbd5e1',
+                background: T.panelBg,
+                color: T.transcriptText,
                 fontSize: 12,
                 lineHeight: 1.7,
                 whiteSpace: 'pre-wrap',
                 fontFamily: 'system-ui, sans-serif',
+                borderTop: `1px solid ${T.borderMuted}`,
               }}>
                 {section.content}
               </div>
