@@ -150,3 +150,8 @@ POST /calls                          — log a completed call to Supabase + Shee
 - Move to Rejects now logs the call (POST /calls) then archives then advances to next lead (same as Save & Next)
 - Added manual "Save Notes" button with "Saved ✓" confirmation in NotesPanel
 - "Move to Second Attempt" button hidden when on Second Attempt tab — only Save & Next + Move to Rejects shown
+
+## Session 23 — Rejects Tab in CRM
+- Rejects tab now visible in the sidebar (third tab alongside Ready for Call + Second Attempt)
+- Rejects rows show no colored status badge — plain name + phone only
+- On Rejects tab: only outcome dropdown + Save & Next shown; Move to Second Attempt and Move to Rejects buttons both hidden

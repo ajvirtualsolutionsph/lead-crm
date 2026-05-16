@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { T } from '../theme.js';
 
-const TABS = ['Ready for Call', 'Second Attempt'];
+const TABS = ['Ready for Call', 'Second Attempt', 'Rejects'];
 
 const STATUS_COLORS = {
   New:              T.badgeNew,
@@ -131,7 +131,8 @@ export default function LeadsSidebar({ leads, loading, selectedLead, onSelect, o
         )}
         {filtered.map(lead => {
           const isSelected = selectedLead?.rowIndex === lead.rowIndex && selectedLead?.sheet === lead.sheet;
-          const badge = STATUS_COLORS[lead.status] || STATUS_COLORS['New'];
+          const isRejects = activeSheet === 'Rejects';
+          const badge = isRejects ? null : (STATUS_COLORS[lead.status] || STATUS_COLORS['New']);
           return (
             <div
               key={`${lead.sheet}-${lead.rowIndex}`}
@@ -146,9 +147,11 @@ export default function LeadsSidebar({ leads, loading, selectedLead, onSelect, o
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
                 <span style={{ fontWeight: 600, fontSize: 13, color: T.textPrimary }}>{lead.name || '(no name)'}</span>
-                <span style={{ fontSize: 11, padding: '2px 6px', borderRadius: 10, background: badge.bg, color: badge.text }}>
-                  {lead.status || 'New'}
-                </span>
+                {!isRejects && (
+                  <span style={{ fontSize: 11, padding: '2px 6px', borderRadius: 10, background: badge.bg, color: badge.text }}>
+                    {lead.status || 'New'}
+                  </span>
+                )}
               </div>
               <div style={{ fontSize: 12, color: T.textMuted }}>{lead.phone}</div>
               {lead.website && (

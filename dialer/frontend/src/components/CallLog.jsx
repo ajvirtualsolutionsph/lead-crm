@@ -79,7 +79,7 @@ export default function CallLog({ outcome, setOutcome, saving, onSave, onMoveToS
               {saving ? 'Saving…' : 'Save & Next Lead'}
             </button>
 
-            {activeSheet !== 'Second Attempt' && (
+            {activeSheet !== 'Second Attempt' && activeSheet !== 'Rejects' && (
               <>
                 <button
                   onClick={async () => {
@@ -117,37 +117,39 @@ export default function CallLog({ outcome, setOutcome, saving, onSave, onMoveToS
               </>
             )}
 
-            <button
-              onClick={async () => {
-                if (!selectedLead?.rowIndex) return;
-                setMovingRejects(true);
-                setMoveMsg('');
-                try {
-                  await onMoveToRejects(selectedLead);
-                  setMoveMsg('Moved to Rejects');
-                } catch {
-                  setMoveMsg('Move failed');
-                } finally {
-                  setMovingRejects(false);
-                  setTimeout(() => setMoveMsg(''), 3000);
-                }
-              }}
-              disabled={movingRejects}
-              style={{
-                width: '100%',
-                padding: 8,
-                marginTop: 6,
-                background: 'transparent',
-                color: movingRejects ? T.textMuted : '#f59e0b',
-                border: `1px solid ${movingRejects ? T.borderMuted : '#f59e0b'}`,
-                borderRadius: 6,
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: movingRejects ? 'not-allowed' : 'pointer',
-              }}
-            >
-              {movingRejects ? 'Moving…' : '→ Move to Rejects'}
-            </button>
+            {activeSheet !== 'Rejects' && (
+              <button
+                onClick={async () => {
+                  if (!selectedLead?.rowIndex) return;
+                  setMovingRejects(true);
+                  setMoveMsg('');
+                  try {
+                    await onMoveToRejects(selectedLead);
+                    setMoveMsg('Moved to Rejects');
+                  } catch {
+                    setMoveMsg('Move failed');
+                  } finally {
+                    setMovingRejects(false);
+                    setTimeout(() => setMoveMsg(''), 3000);
+                  }
+                }}
+                disabled={movingRejects}
+                style={{
+                  width: '100%',
+                  padding: 8,
+                  marginTop: 6,
+                  background: 'transparent',
+                  color: movingRejects ? T.textMuted : '#f59e0b',
+                  border: `1px solid ${movingRejects ? T.borderMuted : '#f59e0b'}`,
+                  borderRadius: 6,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  cursor: movingRejects ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {movingRejects ? 'Moving…' : '→ Move to Rejects'}
+              </button>
+            )}
           </>
         )}
       </div>
