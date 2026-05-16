@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getLeads, updateLead, updateDialerNotes, updateLeadField, syncFromLeadGen, archiveNoAnswer, SHEET_TABS } from '../lib/sheets.js';
+import { getLeads, updateLead, updateDialerNotes, updateLeadField, syncFromLeadGen, archiveNoAnswer, moveLeadToSecondAttempt, SHEET_TABS } from '../lib/sheets.js';
 
 const router = Router();
 
@@ -58,6 +58,19 @@ router.patch('/:rowIndex/info', async (req, res) => {
   } catch (err) {
     console.error('Lead field update error:', err);
     res.status(400).json({ error: err.message || 'Failed to update field' });
+  }
+});
+
+// Move a single lead to Second Attempt regardless of status
+router.post('/:rowIndex/move-to-second', async (req, res) => {
+  try {
+    const rowIndex = parseInt(req.params.rowIndex, 10);
+    const { sheet } = req.body;
+    const result = await moveLeadToSecondAttempt(rowIndex, sheet);
+    res.json(result);
+  } catch (err) {
+    console.error('Move error:', err);
+    res.status(500).json({ error: err.message || 'Failed to move lead' });
   }
 });
 

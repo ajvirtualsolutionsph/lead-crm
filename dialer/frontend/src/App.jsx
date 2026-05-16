@@ -111,6 +111,11 @@ export default function App() {
           setOutcome={setOutcome}
           saving={saving}
           onSave={handleSaveAndNext}
+          onMoveToSecond={async (lead) => {
+            await axios.post(`/leads/${lead.rowIndex}/move-to-second`, { sheet: lead.sheet });
+            fetchLeads(activeSheet);
+            setSelectedLead(null);
+          }}
           selectedLead={selectedLead}
           refreshKey={callLogKey}
         />

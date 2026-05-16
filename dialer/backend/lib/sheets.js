@@ -298,3 +298,84 @@ export async function archiveNoAnswer() {
   console.log(`[archive] Moved ${noAnswerRows.length} No Answer leads to "${DEST_TAB}"`);
   return { moved: noAnswerRows.length };
 }
+
+// Move a single lead (by rowIndex) from any source tab → Second Attempt
+export async function moveLeadToSecondAttempt(rowIndex, sheetName = 'Ready for Call') {
+  const DEST_TAB = 'Second Attempt';
+
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: SHEET_ID,
+    range: `'${sheetName}'!A:X`,
+  });
+  const rows = res.data.values || [];
+  if (rows.length < 2) throw new Error('No data in source sheet');
+
+  const header = rows[0];
+  // rowIndex from the frontend is 1-based data row (excludes header)
+  const dataIndex = rowIndex - 2; // -1 for header, -1 for 0-based
+  const targetRow = rows[dataIndex + 1]; // +1 to skip header in rows array
+  if (!targetRow) throw new Error(`Row ${rowIndex} not found in "${sheetName}"`);
+
+  // Ensure Second Attempt sheet exists with formatting
+  const meta = await sheets.spreadsheets.get({ spreadsheetId: SHEET_ID });
+  const existingSheets = meta.data.sheets;
+  const existingTitles = existingSheets.map(s => s.properties.title);
+
+  let destSheetId;
+  if (!existingTitles.includes(DEST_TAB)) {
+    const addRes = await sheets.spreadsheets.batchUpdate({
+      spreadsheetId: SHEET_ID,
+      requestBody: { requests: [{ addSheet: { properties: { title: DEST_TAB } } }] },
+    });
+    destSheetId = addRes.data.replies[0].addSheet.properties.sheetId;
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SHEET_ID,
+      range: `'${DEST_TAB}'!A1`,
+      valueInputOption: 'USER_ENTERED',
+      requestBody: { values: [header] },
+    });
+
+    const blue      = { red: 0.22745098, green: 0.46666667, blue: 0.84705883 };
+    const white     = { red: 1, green: 1, blue: 1 };
+    const bandLight = { red: 0.92941177, green: 0.9490196,  blue: 0.9764706  };
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId: SHEET_ID,
+      requestBody: {
+        requests: [
+          { updateSheetProperties: { properties: { sheetId: destSheetId, gridProperties: { frozenRowCount: 1 } }, fields: 'gridProperties.frozenRowCount' } },
+          { repeatCell: { range: { sheetId: destSheetId, startRowIndex: 0, endRowIndex: 1 }, cell: { userEnteredFormat: { backgroundColor: blue, textFormat: { bold: true, foregroundColor: white }, verticalAlignment: 'MIDDLE' } }, fields: 'userEnteredFormat(backgroundColor,textFormat,verticalAlignment)' } },
+          { updateDimensionProperties: { range: { sheetId: destSheetId, dimension: 'ROWS', startIndex: 0 }, properties: { pixelSize: 21 }, fields: 'pixelSize' } },
+          { addBanding: { bandedRange: { range: { sheetId: destSheetId, startRowIndex: 1 }, rowProperties: { firstBandColor: white, secondBandColor: bandLight } } } },
+        ],
+      },
+    });
+  } else {
+    destSheetId = existingSheets.find(s => s.properties.title === DEST_TAB).properties.sheetId;
+  }
+
+  // Append the row to Second Attempt
+  await sheets.spreadsheets.values.append({
+    spreadsheetId: SHEET_ID,
+    range: `'${DEST_TAB}'!A:X`,
+    valueInputOption: 'USER_ENTERED',
+    insertDataOption: 'INSERT_ROWS',
+    requestBody: { values: [targetRow] },
+  });
+
+  // Delete from source sheet
+  const sourceSheetId = meta.data.sheets.find(s => s.properties.title === sheetName).properties.sheetId;
+  const sheetRowIndex = dataIndex + 1; // 0-based, +1 to skip header
+  await sheets.spreadsheets.batchUpdate({
+    spreadsheetId: SHEET_ID,
+    requestBody: {
+      requests: [{
+        deleteDimension: {
+          range: { sheetId: sourceSheetId, dimension: 'ROWS', startIndex: sheetRowIndex, endIndex: sheetRowIndex + 1 },
+        },
+      }],
+    },
+  });
+
+  console.log(`[move] Moved row ${rowIndex} from "${sheetName}" → "${DEST_TAB}"`);
+  return { moved: 1 };
+}
