@@ -123,7 +123,7 @@ POST /calls                          — log a completed call to Supabase + Shee
 
 ## Deployment
 - Backend: https://phone-dialer-shl2.onrender.com (Render, free tier)
-- Frontend: https://phone-dialer-six.vercel.app (Vercel)
+- Frontend: https://lead-crm-aj.vercel.app (Vercel)
 - UptimeRobot: pings `/health` every 5 min to keep Render awake
 
 ## Agent workflow
