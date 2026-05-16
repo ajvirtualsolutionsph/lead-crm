@@ -142,6 +142,5 @@ POST /calls                          — log a completed call to Supabase + Shee
 ## Next
 - [ ] **Real calling session** — work through leads at scale with new workflow
 - [ ] **Test Save & Next** — log a call, confirm it appears in Supabase + col W
-- [ ] **Change UptimeRobot to 1-min interval** — via UptimeRobot dashboard (currently 5 min)
 - [ ] **GitHub profile** — add repo descriptions, topics, README (via GitHub web UI)
 - [ ] **Phase 2 CRM** — per-lead call history view, status filter, better lead browsing
