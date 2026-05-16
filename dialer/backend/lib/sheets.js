@@ -17,7 +17,7 @@ export const SHEET_TABS = ['Ready for Call', 'Second Attempt', 'Rejects'];
 // I(8)  rating        J(9)  review_count    K(10) notes          L(11) details
 // M(12) subject       N(13) email_body      O(14) followup       P(15) date_drafted
 // Q(16) sent          R(17) followup_sent   S(18) status         T(19) thread_id
-// U(20) message_id    V(21) call_status     W(22) last_called    X(23) dialer_notes
+// U(20) message_id    V(21) call_status     W(22) dialer_notes   [X dropped]
 
 function normalizePhone(raw) {
   if (!raw) return '';
@@ -28,7 +28,7 @@ function normalizePhone(raw) {
 }
 
 export async function getLeads(sheetName = 'Ready for Call') {
-  const range = `'${sheetName}'!A:X`;
+  const range = `'${sheetName}'!A:W`;
   let res;
   try {
     res = await sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range });
@@ -53,8 +53,7 @@ export async function getLeads(sheetName = 'Ready for Call') {
     notes: row[10] || '',
     details: row[11] || '',
     status: row[21] || 'New',     // col V: call_status
-    lastCalled: row[22] || '',    // col W: last_called
-    dialer_notes: row[23] || '',  // col X: dialer_notes
+    dialer_notes: row[22] || '',  // col W: dialer_notes (CRM Notes)
   }));
 }
 
@@ -79,14 +78,13 @@ export async function updateDialerNotes(rowIndex, notes, sheetName = 'Ready for 
     spreadsheetId: SHEET_ID,
     requestBody: {
       valueInputOption: 'USER_ENTERED',
-      data: [{ range: `'${sheetName}'!X${rowIndex}`, values: [[notes]] }],
+      data: [{ range: `'${sheetName}'!W${rowIndex}`, values: [[notes]] }],
     },
   });
 }
 
-// Full update: status + timestamp + notes (col V, W, X) — used by Save & Next
+// Full update: status + notes (col V, W) — used by Save & Next
 export async function updateLead(rowIndex, status, notes, sheetName = 'Ready for Call') {
-  const now = new Date().toISOString();
   const s = `'${sheetName}'`;
   await sheets.spreadsheets.values.batchUpdate({
     spreadsheetId: SHEET_ID,
@@ -94,25 +92,7 @@ export async function updateLead(rowIndex, status, notes, sheetName = 'Ready for
       valueInputOption: 'USER_ENTERED',
       data: [
         { range: `${s}!V${rowIndex}`, values: [[status]] },
-        { range: `${s}!W${rowIndex}`, values: [[now]] },
-        { range: `${s}!X${rowIndex}`, values: [[notes]] },
-      ],
-    },
-  });
-}
-
-// Status-only update: status + timestamp (col V, W) — used by auto-log (no-answer, busy, voicemail)
-// Does NOT touch col X (dialer_notes) so user notes are never overwritten automatically
-export async function updateLeadStatus(rowIndex, status, sheetName = 'Ready for Call') {
-  const now = new Date().toISOString();
-  const s = `'${sheetName}'`;
-  await sheets.spreadsheets.values.batchUpdate({
-    spreadsheetId: SHEET_ID,
-    requestBody: {
-      valueInputOption: 'USER_ENTERED',
-      data: [
-        { range: `${s}!V${rowIndex}`, values: [[status]] },
-        { range: `${s}!W${rowIndex}`, values: [[now]] },
+        { range: `${s}!W${rowIndex}`, values: [[notes]] },
       ],
     },
   });
@@ -377,4 +357,87 @@ export async function moveLeadToSecondAttempt(rowIndex, sheetName = 'Ready for C
 
 export async function moveLeadToRejects(rowIndex, sheetName) {
   return moveLeadToTab(rowIndex, sheetName, 'Rejects');
+}
+
+// One-time setup: migrate dialer_notes X→W across all tabs, create Rejects sheet
+export async function setupSheets() {
+  const meta = await sheets.spreadsheets.get({ spreadsheetId: SHEET_ID });
+  const existingSheets = meta.data.sheets;
+  const existingTitles = existingSheets.map(s => s.properties.title);
+
+  // Migrate X → W for every existing tab
+  const migrationResults = [];
+  for (const tab of existingTitles) {
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: SHEET_ID,
+      range: `'${tab}'!A:X`,
+    });
+    const rows = res.data.values || [];
+    if (rows.length < 2) { migrationResults.push({ tab, migrated: 0 }); continue; }
+
+    const updates = [];
+    const clears = [];
+    rows.forEach((row, i) => {
+      if (i === 0) return; // skip header
+      const rowNum = i + 1;
+      const xVal = row[23] || '';
+      if (xVal) {
+        updates.push({ range: `'${tab}'!W${rowNum}`, values: [[xVal]] });
+        clears.push({ range: `'${tab}'!X${rowNum}`, values: [['']] });
+      }
+    });
+
+    if (updates.length > 0) {
+      await sheets.spreadsheets.values.batchUpdate({
+        spreadsheetId: SHEET_ID,
+        requestBody: { valueInputOption: 'USER_ENTERED', data: [...updates, ...clears] },
+      });
+    }
+    migrationResults.push({ tab, migrated: updates.length });
+    console.log(`[setup] "${tab}": migrated ${updates.length} rows X→W`);
+  }
+
+  // Create Rejects tab if missing
+  const blue      = { red: 0.22745098, green: 0.46666667, blue: 0.84705883 };
+  const white     = { red: 1, green: 1, blue: 1 };
+  const bandLight = { red: 0.92941177, green: 0.9490196,  blue: 0.9764706  };
+
+  let rejectsCreated = false;
+  if (!existingTitles.includes('Rejects')) {
+    // Get header from Ready for Call
+    const headerRes = await sheets.spreadsheets.values.get({
+      spreadsheetId: SHEET_ID,
+      range: `'Ready for Call'!A1:X1`,
+    });
+    const header = headerRes.data.values?.[0] || [];
+
+    const addRes = await sheets.spreadsheets.batchUpdate({
+      spreadsheetId: SHEET_ID,
+      requestBody: { requests: [{ addSheet: { properties: { title: 'Rejects' } } }] },
+    });
+    const rejectsSheetId = addRes.data.replies[0].addSheet.properties.sheetId;
+
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SHEET_ID,
+      range: `'Rejects'!A1`,
+      valueInputOption: 'USER_ENTERED',
+      requestBody: { values: [header] },
+    });
+
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId: SHEET_ID,
+      requestBody: {
+        requests: [
+          { updateSheetProperties: { properties: { sheetId: rejectsSheetId, gridProperties: { frozenRowCount: 1 } }, fields: 'gridProperties.frozenRowCount' } },
+          { repeatCell: { range: { sheetId: rejectsSheetId, startRowIndex: 0, endRowIndex: 1 }, cell: { userEnteredFormat: { backgroundColor: blue, textFormat: { bold: true, foregroundColor: white }, verticalAlignment: 'MIDDLE' } }, fields: 'userEnteredFormat(backgroundColor,textFormat,verticalAlignment)' } },
+          { updateDimensionProperties: { range: { sheetId: rejectsSheetId, dimension: 'ROWS', startIndex: 0 }, properties: { pixelSize: 21 }, fields: 'pixelSize' } },
+          { addBanding: { bandedRange: { range: { sheetId: rejectsSheetId, startRowIndex: 1 }, rowProperties: { firstBandColor: white, secondBandColor: bandLight } } } },
+        ],
+      },
+    });
+    rejectsCreated = true;
+    console.log('[setup] Created Rejects sheet');
+  }
+
+  return { migrationResults, rejectsCreated };
 }
