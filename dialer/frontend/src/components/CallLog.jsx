@@ -9,7 +9,7 @@ function formatDate(iso) {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
-export default function CallLog({ outcome, setOutcome, saving, onSave, onMoveToSecond, onMoveToRejects, selectedLead, refreshKey }) {
+export default function CallLog({ outcome, setOutcome, saving, onSave, onMoveToSecond, onMoveToRejects, selectedLead, refreshKey, activeSheet }) {
   const [recentCalls, setRecentCalls] = useState([]);
   const [moving, setMoving] = useState(false);
   const [moveMsg, setMoveMsg] = useState('');
@@ -79,38 +79,42 @@ export default function CallLog({ outcome, setOutcome, saving, onSave, onMoveToS
               {saving ? 'Saving…' : 'Save & Next Lead'}
             </button>
 
-            <button
-              onClick={async () => {
-                if (!selectedLead?.rowIndex) return;
-                setMoving(true);
-                setMoveMsg('');
-                try {
-                  await onMoveToSecond(selectedLead);
-                  setMoveMsg('Moved to Second Attempt');
-                } catch {
-                  setMoveMsg('Move failed');
-                } finally {
-                  setMoving(false);
-                  setTimeout(() => setMoveMsg(''), 3000);
-                }
-              }}
-              disabled={moving}
-              style={{
-                width: '100%',
-                padding: 8,
-                background: 'transparent',
-                color: moving ? T.textMuted : '#f59e0b',
-                border: `1px solid ${moving ? T.borderMuted : '#f59e0b'}`,
-                borderRadius: 6,
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: moving ? 'not-allowed' : 'pointer',
-              }}
-            >
-              {moving ? 'Moving…' : '→ Move to Second Attempt'}
-            </button>
-            {moveMsg && (
-              <div style={{ fontSize: 11, color: '#10b981', textAlign: 'center', marginTop: 6 }}>{moveMsg}</div>
+            {activeSheet !== 'Second Attempt' && (
+              <>
+                <button
+                  onClick={async () => {
+                    if (!selectedLead?.rowIndex) return;
+                    setMoving(true);
+                    setMoveMsg('');
+                    try {
+                      await onMoveToSecond(selectedLead);
+                      setMoveMsg('Moved to Second Attempt');
+                    } catch {
+                      setMoveMsg('Move failed');
+                    } finally {
+                      setMoving(false);
+                      setTimeout(() => setMoveMsg(''), 3000);
+                    }
+                  }}
+                  disabled={moving}
+                  style={{
+                    width: '100%',
+                    padding: 8,
+                    background: 'transparent',
+                    color: moving ? T.textMuted : '#f59e0b',
+                    border: `1px solid ${moving ? T.borderMuted : '#f59e0b'}`,
+                    borderRadius: 6,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    cursor: moving ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  {moving ? 'Moving…' : '→ Move to Second Attempt'}
+                </button>
+                {moveMsg && (
+                  <div style={{ fontSize: 11, color: '#10b981', textAlign: 'center', marginTop: 6 }}>{moveMsg}</div>
+                )}
+              </>
             )}
 
             <button

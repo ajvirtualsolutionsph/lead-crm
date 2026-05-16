@@ -141,7 +141,12 @@ POST /calls                          — log a completed call to Supabase + Shee
 - Cold calling script editable per-section via localStorage (no backend needed)
 
 ## Next
-- [ ] **Real calling session** — work through leads at scale with new workflow
-- [ ] **Test Save & Next** — log a call, confirm it appears in Supabase + col W
+- [ ] **Real calling session** — work through leads at scale with improved workflow
+- [ ] **Test Save & Next + Move to Rejects** — confirm call logged in Supabase + col W, next lead auto-selected
 - [ ] **GitHub profile** — add repo descriptions, topics, README (via GitHub web UI)
 - [ ] **Phase 2 CRM** — per-lead call history view, status filter, better lead browsing
+
+## Session 22 — Call Log UX Improvements
+- Move to Rejects now logs the call (POST /calls) then archives then advances to next lead (same as Save & Next)
+- Added manual "Save Notes" button with "Saved ✓" confirmation in NotesPanel
+- "Move to Second Attempt" button hidden when on Second Attempt tab — only Save & Next + Move to Rejects shown

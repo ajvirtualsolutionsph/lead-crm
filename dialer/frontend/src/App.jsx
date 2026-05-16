@@ -72,6 +72,14 @@ export default function App() {
     if (next) setSelectedLead(next);
   }
 
+  async function handleSaveNotes() {
+    if (!selectedLead?.rowIndex) return;
+    await axios.patch(`/leads/${selectedLead.rowIndex}/notes`, {
+      notes,
+      sheet: selectedLead.sheet,
+    }).catch(err => console.error('Notes save failed:', err));
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: 'system-ui, sans-serif', background: T.appBg }}>
       <StatusBar />
@@ -103,6 +111,7 @@ export default function App() {
           notes={notes}
           setNotes={setNotes}
           selectedLead={selectedLead}
+          onSaveNotes={handleSaveNotes}
         />
 
         {/* Column 3: Call Log */}
@@ -117,12 +126,30 @@ export default function App() {
             setSelectedLead(null);
           }}
           onMoveToRejects={async (lead) => {
+            try {
+              await axios.post('/calls', {
+                leadName: lead.name,
+                phone: lead.phone,
+                durationSeconds: 0,
+                status: outcome,
+                notes,
+                rowIndex: lead.rowIndex,
+                sheetName: lead.sheet,
+              });
+            } catch (err) {
+              console.error('Failed to log call on reject:', err);
+            }
             await axios.post(`/leads/${lead.rowIndex}/move-to-rejects`, { sheet: lead.sheet });
+            setCallLogKey(k => k + 1);
             fetchLeads(activeSheet);
-            setSelectedLead(null);
+            const idx = leads.findIndex(l => l.rowIndex === lead.rowIndex);
+            const next = leads[idx + 1];
+            if (next) setSelectedLead(next);
+            else setSelectedLead(null);
           }}
           selectedLead={selectedLead}
           refreshKey={callLogKey}
+          activeSheet={activeSheet}
         />
 
       </div>

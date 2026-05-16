@@ -143,13 +143,14 @@ function loadScript() {
   }
 }
 
-export default function NotesPanel({ notes, setNotes, selectedLead }) {
+export default function NotesPanel({ notes, setNotes, selectedLead, onSaveNotes }) {
   const [fieldValues, setFieldValues] = useState({});
   const [website, setWebsite] = useState('');
   const [openSection, setOpenSection] = useState(0);
   const [scriptSections, setScriptSections] = useState(loadScript);
   const [editingSection, setEditingSection] = useState(null); // index being edited
   const [editDraft, setEditDraft] = useState('');
+  const [notesSaved, setNotesSaved] = useState(false);
 
   useEffect(() => {
     if (!selectedLead) { setFieldValues({}); setWebsite(''); return; }
@@ -196,7 +197,7 @@ export default function NotesPanel({ notes, setNotes, selectedLead }) {
         <textarea
           value={notes}
           onChange={e => setNotes(e.target.value)}
-          placeholder="Type notes here… auto-saved"
+          placeholder="Type notes here…"
           style={{
             width: '100%',
             height: 180,
@@ -212,6 +213,32 @@ export default function NotesPanel({ notes, setNotes, selectedLead }) {
             fontFamily: 'system-ui, sans-serif',
           }}
         />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
+          <button
+            onClick={async () => {
+              await onSaveNotes?.();
+              setNotesSaved(true);
+              setTimeout(() => setNotesSaved(false), 2000);
+            }}
+            disabled={!selectedLead}
+            style={{
+              padding: '4px 12px',
+              background: T.saveBlue,
+              color: '#fff',
+              border: 'none',
+              borderRadius: 4,
+              fontSize: 11,
+              fontWeight: 600,
+              cursor: selectedLead ? 'pointer' : 'not-allowed',
+              opacity: selectedLead ? 1 : 0.4,
+            }}
+          >
+            Save Notes
+          </button>
+          {notesSaved && (
+            <span style={{ fontSize: 11, color: '#10b981', fontWeight: 600 }}>Saved ✓</span>
+          )}
+        </div>
       </div>
 
       {/* Lead details header */}
