@@ -116,6 +116,11 @@ export default function App() {
             fetchLeads(activeSheet);
             setSelectedLead(null);
           }}
+          onMoveToRejects={async (lead) => {
+            await axios.post(`/leads/${lead.rowIndex}/move-to-rejects`, { sheet: lead.sheet });
+            fetchLeads(activeSheet);
+            setSelectedLead(null);
+          }}
           selectedLead={selectedLead}
           refreshKey={callLogKey}
         />

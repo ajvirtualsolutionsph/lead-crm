@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getLeads, updateLead, updateDialerNotes, updateLeadField, syncFromLeadGen, archiveNoAnswer, moveLeadToSecondAttempt, SHEET_TABS } from '../lib/sheets.js';
+import { getLeads, updateLead, updateDialerNotes, updateLeadField, syncFromLeadGen, archiveNoAnswer, moveLeadToSecondAttempt, moveLeadToRejects, SHEET_TABS } from '../lib/sheets.js';
 
 const router = Router();
 
@@ -71,6 +71,19 @@ router.post('/:rowIndex/move-to-second', async (req, res) => {
   } catch (err) {
     console.error('Move error:', err);
     res.status(500).json({ error: err.message || 'Failed to move lead' });
+  }
+});
+
+// Move a single lead to Rejects regardless of status
+router.post('/:rowIndex/move-to-rejects', async (req, res) => {
+  try {
+    const rowIndex = parseInt(req.params.rowIndex, 10);
+    const { sheet } = req.body;
+    const result = await moveLeadToRejects(rowIndex, sheet);
+    res.json(result);
+  } catch (err) {
+    console.error('Move to Rejects error:', err);
+    res.status(500).json({ error: err.message || 'Failed to move lead to Rejects' });
   }
 });
 

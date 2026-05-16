@@ -9,10 +9,11 @@ function formatDate(iso) {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
-export default function CallLog({ outcome, setOutcome, saving, onSave, onMoveToSecond, selectedLead, refreshKey }) {
+export default function CallLog({ outcome, setOutcome, saving, onSave, onMoveToSecond, onMoveToRejects, selectedLead, refreshKey }) {
   const [recentCalls, setRecentCalls] = useState([]);
   const [moving, setMoving] = useState(false);
   const [moveMsg, setMoveMsg] = useState('');
+  const [movingRejects, setMovingRejects] = useState(false);
 
   useEffect(() => {
     axios.get('/calls')
@@ -111,6 +112,38 @@ export default function CallLog({ outcome, setOutcome, saving, onSave, onMoveToS
             {moveMsg && (
               <div style={{ fontSize: 11, color: '#10b981', textAlign: 'center', marginTop: 6 }}>{moveMsg}</div>
             )}
+
+            <button
+              onClick={async () => {
+                if (!selectedLead?.rowIndex) return;
+                setMovingRejects(true);
+                setMoveMsg('');
+                try {
+                  await onMoveToRejects(selectedLead);
+                  setMoveMsg('Moved to Rejects');
+                } catch {
+                  setMoveMsg('Move failed');
+                } finally {
+                  setMovingRejects(false);
+                  setTimeout(() => setMoveMsg(''), 3000);
+                }
+              }}
+              disabled={movingRejects}
+              style={{
+                width: '100%',
+                padding: 8,
+                marginTop: 6,
+                background: 'transparent',
+                color: movingRejects ? T.textMuted : '#f59e0b',
+                border: `1px solid ${movingRejects ? T.borderMuted : '#f59e0b'}`,
+                borderRadius: 6,
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: movingRejects ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {movingRejects ? 'Moving…' : '→ Move to Rejects'}
+            </button>
           </>
         )}
       </div>
