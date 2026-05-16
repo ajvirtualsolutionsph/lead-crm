@@ -129,10 +129,27 @@ const inputStyle = {
   fontFamily: 'system-ui, sans-serif',
 };
 
+const STORAGE_KEY = 'crm_script_sections';
+
+function loadScript() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return SCRIPT;
+    const parsed = JSON.parse(saved);
+    // Merge: use saved content but fall back to default for any missing sections
+    return SCRIPT.map((def, i) => ({ ...def, content: parsed[i]?.content ?? def.content }));
+  } catch {
+    return SCRIPT;
+  }
+}
+
 export default function NotesPanel({ notes, setNotes, selectedLead }) {
   const [fieldValues, setFieldValues] = useState({});
   const [website, setWebsite] = useState('');
   const [openSection, setOpenSection] = useState(0);
+  const [scriptSections, setScriptSections] = useState(loadScript);
+  const [editingSection, setEditingSection] = useState(null); // index being edited
+  const [editDraft, setEditDraft] = useState('');
 
   useEffect(() => {
     if (!selectedLead) { setFieldValues({}); setWebsite(''); return; }
@@ -273,40 +290,125 @@ export default function NotesPanel({ notes, setNotes, selectedLead }) {
         <div style={{ padding: '6px 14px', background: T.sidebarBg, borderBottom: `1px solid ${T.borderMuted}` }}>
           <span style={{ fontSize: 11, fontWeight: 600, color: T.textMuted, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Cold Calling Script</span>
         </div>
-        {SCRIPT.map((section, i) => (
+        {scriptSections.map((section, i) => (
           <div key={i} style={{ borderBottom: `1px solid ${T.borderMuted}` }}>
-            <button
-              onClick={() => setOpenSection(openSection === i ? -1 : i)}
-              style={{
-                width: '100%',
-                textAlign: 'left',
-                padding: '7px 14px',
-                background: openSection === i ? T.inputBg : 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                color: openSection === i ? T.textPrimary : T.textMuted,
-                fontSize: 12,
-                fontWeight: 600,
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
-            >
-              <span>{section.title}</span>
-              <span style={{ color: T.textMuted, fontSize: 10 }}>{openSection === i ? '▲' : '▼'}</span>
-            </button>
+            {/* Section header */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              background: openSection === i ? T.inputBg : 'transparent',
+            }}>
+              <button
+                onClick={() => { setOpenSection(openSection === i ? -1 : i); setEditingSection(null); }}
+                style={{
+                  flex: 1,
+                  textAlign: 'left',
+                  padding: '7px 14px',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: openSection === i ? T.textPrimary : T.textMuted,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <span>{section.title}</span>
+                <span style={{ color: T.textMuted, fontSize: 10 }}>{openSection === i ? '▲' : '▼'}</span>
+              </button>
+              {/* Edit button — only visible when section is open */}
+              {openSection === i && editingSection !== i && (
+                <button
+                  onClick={e => { e.stopPropagation(); setEditingSection(i); setEditDraft(section.content); }}
+                  style={{
+                    padding: '3px 8px',
+                    marginRight: 10,
+                    background: 'transparent',
+                    border: `1px solid ${T.borderStrong}`,
+                    borderRadius: 4,
+                    color: T.textMuted,
+                    fontSize: 10,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
+                  }}
+                >
+                  Edit
+                </button>
+              )}
+            </div>
+
+            {/* Section content */}
             {openSection === i && (
               <div style={{
                 padding: '8px 14px 12px',
                 background: T.panelBg,
-                color: T.transcriptText,
-                fontSize: 12,
-                lineHeight: 1.7,
-                whiteSpace: 'pre-wrap',
-                fontFamily: 'system-ui, sans-serif',
                 borderTop: `1px solid ${T.borderMuted}`,
               }}>
-                {section.content}
+                {editingSection === i ? (
+                  <>
+                    <textarea
+                      value={editDraft}
+                      onChange={e => setEditDraft(e.target.value)}
+                      style={{
+                        width: '100%',
+                        minHeight: 180,
+                        padding: 8,
+                        background: T.inputBg,
+                        color: T.textPrimary,
+                        border: `1px solid ${T.borderStrong}`,
+                        borderRadius: 4,
+                        fontSize: 12,
+                        lineHeight: 1.7,
+                        fontFamily: 'system-ui, sans-serif',
+                        boxSizing: 'border-box',
+                        resize: 'vertical',
+                      }}
+                    />
+                    <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+                      <button
+                        onClick={() => {
+                          const updated = scriptSections.map((s, idx) => idx === i ? { ...s, content: editDraft } : s);
+                          setScriptSections(updated);
+                          localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+                          setEditingSection(null);
+                        }}
+                        style={{ padding: '4px 12px', background: T.saveBlue, color: '#fff', border: 'none', borderRadius: 4, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={() => setEditingSection(null)}
+                        style={{ padding: '4px 12px', background: 'transparent', color: T.textMuted, border: `1px solid ${T.borderStrong}`, borderRadius: 4, fontSize: 11, cursor: 'pointer' }}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => {
+                          const updated = scriptSections.map((s, idx) => idx === i ? { ...s, content: SCRIPT[i].content } : s);
+                          setScriptSections(updated);
+                          localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+                          setEditingSection(null);
+                        }}
+                        style={{ padding: '4px 12px', background: 'transparent', color: '#f87171', border: '1px solid #f87171', borderRadius: 4, fontSize: 11, cursor: 'pointer', marginLeft: 'auto' }}
+                      >
+                        Reset
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div style={{
+                    color: T.transcriptText,
+                    fontSize: 12,
+                    lineHeight: 1.7,
+                    whiteSpace: 'pre-wrap',
+                    fontFamily: 'system-ui, sans-serif',
+                  }}>
+                    {section.content}
+                  </div>
+                )}
               </div>
             )}
           </div>
