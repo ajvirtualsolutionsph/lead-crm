@@ -1,6 +1,6 @@
-# PH-to-US Dialer
+# Lead CRM
 
-Browser-based softphone that calls US numbers from the Philippines via SignalWire WebRTC. Leads come from Google Sheets; call outcomes are written back automatically.
+Cold calling CRM for AJ Virtual Solutions. Agent browses leads from Google Sheets, calls directly via Viber Out, then logs outcomes and notes back to Sheets and Supabase.
 
 ## Quick start
 
@@ -17,8 +17,6 @@ cp .env.example .env
 npm install
 npm run dev            # Vite dev server at http://localhost:5173
 ```
-
-Open `http://localhost:5173` and allow microphone access when prompted.
 
 ## Environment variables
 
@@ -42,5 +40,5 @@ create table calls (
 
 ## Deployment
 
-- **Backend → Render**: push `backend/` folder, add env vars in the Render dashboard, set the SignalWire TwiML webhook to `https://<your-render-url>/twiml`.
-- **Frontend → Vercel**: update `frontend/vercel.json` with your Render URL, push, deploy with `vercel --prod`.
+- **Backend → Render**: push `backend/` folder, add env vars in the Render dashboard.
+- **Frontend → Vercel**: push `frontend/` folder, add env vars in the Vercel dashboard.

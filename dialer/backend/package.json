@@ -1,5 +1,5 @@
 {
-  "name": "dialer-backend",
+  "name": "lead-crm-backend",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
@@ -7,7 +7,6 @@
     "dev": "nodemon index.js"
   },
   "dependencies": {
-    "@signalwire/node": "^3.0.4",
     "@supabase/supabase-js": "^2.39.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.1",
