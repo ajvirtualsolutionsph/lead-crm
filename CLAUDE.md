@@ -189,10 +189,24 @@ POST /calls                          — log a completed call to Supabase + Shee
 - Duplicate fix: removed 10 leads from Ready for Call that were already in Second Attempt
 - **Files changed:** `backend/routes/calls.js`, `backend/routes/leads.js`, `backend/lib/sheets.js`, `backend/index.js`, `frontend/src/App.jsx`, `frontend/src/components/NotesPanel.jsx`, `frontend/src/components/CallLog.jsx`, `frontend/src/components/StatusBar.jsx`
 
+## Session 21 — Script editing, Rejects sheet, column cleanup (2026-05-16)
+- Restored cold calling script accordion to Col 2 (replaced website iframe with Open ↗ button)
+- Made notes textarea larger (180px, font 14px)
+- Script accordion colors now use site theme (navy/blue palette)
+- Added **"→ Move to Second Attempt"** button in Col 3 — works on any lead regardless of status
+- Added **Rejects** sheet (3rd archive tab) + **"→ Move to Rejects"** button in Col 3
+- Refactored `moveLeadToTab()` as generic helper; `moveLeadToSecondAttempt` and `moveLeadToRejects` are thin wrappers
+- Column cleanup: `last_called` (col W) dropped; `dialer_notes` moved from col X → col W ("CRM Notes")
+- `updateLead` and `updateDialerNotes` both write to col W; col X retired
+- Added `POST /leads/setup` — one-time migration (X→W data copy + Rejects sheet creation); already run
+- Added `POST /leads/move-to-second` and `POST /leads/move-to-rejects` endpoints
+- **Cold calling script is now editable** — Edit button per section, saves to localStorage, Reset restores default
+- `SHEET_TABS` updated to `['Ready for Call', 'Second Attempt', 'Rejects']`
+- **Files changed:** `backend/lib/sheets.js`, `backend/routes/leads.js`, `frontend/src/App.jsx`, `frontend/src/components/NotesPanel.jsx`, `frontend/src/components/CallLog.jsx`
+
 ## Next
-- [ ] **Test editable lead fields** — edit a field, verify it saves to Google Sheets
-- [ ] **Test Save & Next** — log a call, confirm it appears in Supabase + Sheets cols V/W/X
 - [ ] **Real calling session** — work through leads at scale with new workflow
+- [ ] **Test Save & Next** — log a call, confirm it appears in Supabase + col W
 - [ ] **Change UptimeRobot to 1-min interval** — via UptimeRobot dashboard (currently 5 min)
 - [ ] **GitHub profile** — add repo descriptions, topics, README (via GitHub web UI)
 - [ ] **Phase 2 CRM** — per-lead call history view, status filter, better lead browsing
