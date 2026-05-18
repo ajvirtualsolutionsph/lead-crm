@@ -5,9 +5,14 @@ import StatusBar from './components/StatusBar.jsx';
 import LeadsSidebar from './components/LeadsSidebar.jsx';
 import NotesPanel from './components/NotesPanel.jsx';
 import CallLog from './components/CallLog.jsx';
+import LoginGate, { isAuthenticated } from './components/LoginGate.jsx';
 import { T } from './theme.js';
 
 export default function App() {
+  const [authed, setAuthed] = useState(isAuthenticated());
+
+  if (!authed) return <LoginGate onAuth={() => setAuthed(true)} />;
+
   const { leads, loading, selectedLead, setSelectedLead, fetchLeads, activeSheet, switchSheet, syncLeads } = useLeads();
   const [callLogKey, setCallLogKey] = useState(0);
 

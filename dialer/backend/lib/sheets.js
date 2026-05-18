@@ -330,13 +330,42 @@ async function moveLeadToTab(rowIndex, sourceSheet, destTab) {
     destSheetId = existingSheets.find(s => s.properties.title === destTab).properties.sheetId;
   }
 
-  await sheets.spreadsheets.values.append({
+  const appendRes = await sheets.spreadsheets.values.append({
     spreadsheetId: SHEET_ID,
     range: `'${destTab}'!A:X`,
     valueInputOption: 'USER_ENTERED',
     insertDataOption: 'INSERT_ROWS',
     requestBody: { values: [targetRow] },
   });
+
+  // Clear any carried-over background/text formatting on the newly appended row
+  const updatedRange = appendRes.data.updates?.updatedRange || '';
+  const rowMatch = updatedRange.match(/:([A-Z]+)(\d+)$/);
+  if (rowMatch) {
+    const newRowIndex = parseInt(rowMatch[2], 10) - 1; // 0-based
+    const black = { red: 0, green: 0, blue: 0 };
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId: SHEET_ID,
+      requestBody: {
+        requests: [
+          {
+            updateCells: {
+              range: { sheetId: destSheetId, startRowIndex: newRowIndex, endRowIndex: newRowIndex + 1 },
+              rows: [{ values: Array(meta.data.sheets.find(s => s.properties.title === destTab)?.properties?.gridProperties?.columnCount || 26).fill({ userEnteredFormat: {} }) }],
+              fields: 'userEnteredFormat.backgroundColor',
+            },
+          },
+          {
+            repeatCell: {
+              range: { sheetId: destSheetId, startRowIndex: newRowIndex, endRowIndex: newRowIndex + 1 },
+              cell: { userEnteredFormat: { textFormat: { foregroundColor: black } } },
+              fields: 'userEnteredFormat.textFormat.foregroundColor',
+            },
+          },
+        ],
+      },
+    });
+  }
 
   const sourceSheetId = meta.data.sheets.find(s => s.properties.title === sourceSheet).properties.sheetId;
   const sheetRowIndex = dataIndex + 1;

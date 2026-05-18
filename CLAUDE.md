@@ -54,6 +54,7 @@ API_SECRET=                  # shared secret — must match VITE_API_SECRET in f
 ```
 VITE_BACKEND_URL=http://localhost:3001
 VITE_API_SECRET=             # shared secret — must match API_SECRET in backend
+VITE_LOGIN_PASSWORD=         # frontend login gate password
 ```
 
 ## Dev commands
@@ -120,6 +121,7 @@ POST /calls                          — log a completed call to Supabase + Shee
 - `x-api-key` header required on all `/calls/*` and `/leads/*` routes
 - Helmet.js security headers
 - Env var startup check — backend exits if Google/Supabase vars are missing
+- Frontend login gate: `VITE_LOGIN_PASSWORD` env var; auth stored in `sessionStorage` (clears on tab close)
 
 ## Deployment
 - Backend: https://phone-dialer-shl2.onrender.com (Render, free tier)
@@ -141,10 +143,12 @@ POST /calls                          — log a completed call to Supabase + Shee
 - Cold calling script editable per-section via localStorage (no backend needed)
 
 ## Next
+- [ ] **Set VITE_LOGIN_PASSWORD on Vercel** — add the env var in Vercel dashboard and redeploy
 - [ ] **Real calling session** — work through leads at scale with improved workflow
 - [ ] **Test Save & Next + Move to Rejects** — confirm call logged in Supabase + col W, next lead auto-selected
 - [ ] **GitHub profile** — add repo descriptions, topics, README (via GitHub web UI)
 - [ ] **Phase 2 CRM** — per-lead call history view, status filter, better lead browsing
+- [ ] **Auth Option B** — backend JWT login (see future ideas memory)
 
 ## Session 22 — Call Log UX Improvements
 - Move to Rejects now logs the call (POST /calls) then archives then advances to next lead (same as Save & Next)
@@ -155,3 +159,9 @@ POST /calls                          — log a completed call to Supabase + Shee
 - Rejects tab now visible in the sidebar (third tab alongside Ready for Call + Second Attempt)
 - Rejects rows show no colored status badge — plain name + phone only
 - On Rejects tab: only outcome dropdown + Save & Next shown; Move to Second Attempt and Move to Rejects buttons both hidden
+
+## Session 24 — Frontend Login Gate
+- Added `LoginGate.jsx` — password screen shown before CRM loads; matches dark theme
+- Password checked against `VITE_LOGIN_PASSWORD` env var; auth stored in `sessionStorage`
+- `App.jsx` checks `sessionStorage` on load — renders login or CRM accordingly
+- Option B (backend JWT auth) saved to memory for a future session
