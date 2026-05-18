@@ -165,3 +165,4 @@ POST /calls                          — log a completed call to Supabase + Shee
 - Password checked against `VITE_LOGIN_PASSWORD` env var; auth stored in `sessionStorage`
 - `App.jsx` checks `sessionStorage` on load — renders login or CRM accordingly
 - Option B (backend JWT auth) saved to memory for a future session
+- Added "Log out" button to right side of `StatusBar` — clears `sessionStorage` and returns to login screen

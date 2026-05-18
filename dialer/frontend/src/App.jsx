@@ -13,6 +13,11 @@ export default function App() {
 
   if (!authed) return <LoginGate onAuth={() => setAuthed(true)} />;
 
+  function handleLogout() {
+    sessionStorage.removeItem('crm_authed');
+    setAuthed(false);
+  }
+
   const { leads, loading, selectedLead, setSelectedLead, fetchLeads, activeSheet, switchSheet, syncLeads } = useLeads();
   const [callLogKey, setCallLogKey] = useState(0);
 
@@ -87,7 +92,7 @@ export default function App() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: 'system-ui, sans-serif', background: T.appBg }}>
-      <StatusBar />
+      <StatusBar onLogout={handleLogout} />
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
 
         {/* Column 1: Leads list */}
