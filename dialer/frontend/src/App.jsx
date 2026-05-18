@@ -10,14 +10,6 @@ import { T } from './theme.js';
 
 export default function App() {
   const [authed, setAuthed] = useState(isAuthenticated());
-
-  if (!authed) return <LoginGate onAuth={() => setAuthed(true)} />;
-
-  function handleLogout() {
-    sessionStorage.removeItem('crm_authed');
-    setAuthed(false);
-  }
-
   const { leads, loading, selectedLead, setSelectedLead, fetchLeads, activeSheet, switchSheet, syncLeads } = useLeads();
   const [callLogKey, setCallLogKey] = useState(0);
 
@@ -27,6 +19,11 @@ export default function App() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => { fetchLeads('Ready for Call'); }, [fetchLeads]);
+
+  function handleLogout() {
+    sessionStorage.removeItem('crm_authed');
+    setAuthed(false);
+  }
 
   // Load notes + reset outcome when lead changes
   useEffect(() => {
@@ -89,6 +86,8 @@ export default function App() {
       sheet: selectedLead.sheet,
     }).catch(err => console.error('Notes save failed:', err));
   }
+
+  if (!authed) return <LoginGate onAuth={() => setAuthed(true)} />;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: 'system-ui, sans-serif', background: T.appBg }}>
