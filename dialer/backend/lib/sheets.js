@@ -98,6 +98,35 @@ export async function updateLead(rowIndex, status, notes, sheetName = 'Ready for
   });
 }
 
+async function sortTabByHours(sheetName = 'Ready for Call') {
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: SHEET_ID,
+    range: `'${sheetName}'!A:W`,
+  });
+  const rows = res.data.values || [];
+  if (rows.length < 3) return;
+
+  const dataRows = rows.slice(1);
+  const withHours    = dataRows.filter(r => (r[7] || '').trim());
+  const withoutHours = dataRows.filter(r => !(r[7] || '').trim());
+  const sorted = [...withHours, ...withoutHours];
+
+  const padded = sorted.map(row => {
+    const r = [...row];
+    while (r.length < 23) r.push('');
+    return r.slice(0, 23);
+  });
+
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: SHEET_ID,
+    range: `'${sheetName}'!A2:W${rows.length}`,
+    valueInputOption: 'USER_ENTERED',
+    requestBody: { values: padded },
+  });
+
+  console.log(`[sort] "${sheetName}": ${withHours.length} with hours, ${withoutHours.length} without`);
+}
+
 export async function syncFromLeadGen() {
   const SOURCE_ID = process.env.LEAD_GEN_SHEET_ID;
   if (!SOURCE_ID) return { added: 0 };
@@ -134,17 +163,19 @@ export async function syncFromLeadGen() {
     return !(phone && existingPhones.has(phone)) && !(bizName && existingNames.has(bizName));
   });
 
-  if (newRows.length === 0) return { added: 0 };
+  if (newRows.length > 0) {
+    await sheets.spreadsheets.values.append({
+      spreadsheetId: SHEET_ID,
+      range: `'${DEST_TAB}'!A:U`,
+      valueInputOption: 'USER_ENTERED',
+      insertDataOption: 'INSERT_ROWS',
+      requestBody: { values: newRows },
+    });
+    console.log(`[sync] "${DEST_TAB}": +${newRows.length} new leads`);
+  }
 
-  await sheets.spreadsheets.values.append({
-    spreadsheetId: SHEET_ID,
-    range: `'${DEST_TAB}'!A:U`,
-    valueInputOption: 'USER_ENTERED',
-    insertDataOption: 'INSERT_ROWS',
-    requestBody: { values: newRows },
-  });
+  await sortTabByHours(DEST_TAB);
 
-  console.log(`[sync] "${DEST_TAB}": +${newRows.length} new leads`);
   return { added: newRows.length };
 }
 

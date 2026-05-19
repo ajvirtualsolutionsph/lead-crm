@@ -45,10 +45,16 @@ export default function LeadsSidebar({ leads, loading, selectedLead, onSelect, o
     }
   }
 
-  const filtered = leads.filter(l =>
-    l.name.toLowerCase().includes(query.toLowerCase()) ||
-    l.phone.includes(query)
-  );
+  const filtered = leads
+    .filter(l =>
+      l.name.toLowerCase().includes(query.toLowerCase()) ||
+      l.phone.includes(query)
+    )
+    .sort((a, b) => {
+      const aHours = a.operating_hours?.trim() ? 1 : 0;
+      const bHours = b.operating_hours?.trim() ? 1 : 0;
+      return bHours - aHours;
+    });
 
   return (
     <div style={{ width: 300, display: 'flex', flexDirection: 'column', borderRight: `1px solid ${T.borderMuted}`, height: '100%', background: T.sidebarBg }}>
@@ -153,7 +159,12 @@ export default function LeadsSidebar({ leads, loading, selectedLead, onSelect, o
                   </span>
                 )}
               </div>
-              <div style={{ fontSize: 12, color: T.textMuted }}>{lead.phone}</div>
+              <div style={{ fontSize: 12, color: T.textMuted, display: 'flex', alignItems: 'center', gap: 4 }}>
+                {lead.phone}
+                {lead.operating_hours?.trim() && (
+                  <span title={lead.operating_hours} style={{ fontSize: 10, color: '#4ade80' }}>⏱</span>
+                )}
+              </div>
               {lead.website && (
                 <a
                   href={lead.website.startsWith('http') ? lead.website : `https://${lead.website}`}
