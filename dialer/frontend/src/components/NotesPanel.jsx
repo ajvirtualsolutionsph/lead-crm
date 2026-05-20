@@ -4,98 +4,130 @@ import { T } from '../theme.js';
 
 const SCRIPT = [
   {
-    title: '🎯 FIRST 30 SECONDS — Hook + Permission',
-    content: `"Hey, is this [First Name]? — Hi, it's just AJ an AI Automation Expert from the Philippines. I was wondering if you could help me out for a moment?"
+    title: '01 — The Opener',
+    content: `First 20 seconds — pattern interrupt. No greetings. No "How are you today?" No company intro. Sound like a slightly disorganized human, not a script.
 
-⏸️ PAUSE. Wait for them to say "sure" or laugh. Don't skip the pause.
+YOUR LINE:
+"Hey [First Name] — I know I'm calling out of the blue, so I'll be quick. Real fast — are you the person handling [lead follow-ups / the books / the admin side] over there, or does someone else take care of all that stuff for you?"
 
-"Thank you, well I am not sure who I should be talking to. I am trying to reach the person whose responsible for overseeing any possible hidden gaps in maintaining your business website, client follow ups and back-end admin tasks that could be causing missed follow ups and business opportunity with customers. Who should I be talking to about that?"
+WHY THIS WORKS:
+The blunt "out of the blue" admission disarms them. The "or someone else" phrasing lowers their defense.
 
-If the person you're speaking to is not the right person:
-"Should I have you transfer me over to him/her to leave a voicemail and she can call me back if she needs help?"
+BRANCHING:
+If they say "That's me":
+→ "Oh perfect — okay, this'll be quick then." → Move to Section 02.
 
-Why This Works:
-• "22 seconds" is oddly specific — forces them to actually listen
-• "9pm emails" and "Sundays" are specific — they recognize themselves
-• "Business stops depending on them being awake" = the dream they rarely hear
-• Honesty disarms — removes their #1 objection before they raise it`,
+If they say "That's [other person]":
+→ "Got it. Honestly real quick before you transfer me — does that side of things actually run smoothly for you guys, or is it kind of the usual mess most businesses deal with?"
+→ They'll either vent (gold) or transfer you (also fine — you got past gatekeeping).`,
   },
   {
-    title: '🔍 QUALIFYING — 3 Questions Only (60–90s)',
-    content: `"Mind if I ask three quick questions to see if this is even worth your time? Cool —"
+    title: '02 — The Confused Man Pitch',
+    content: `The frame: you're not selling. You're trying to understand if their setup is like the others you've seen. Lower your energy — slow down, sound like you're thinking out loud.
 
-Q1 – PAIN DISCOVERY: "What's eating the most hours in your week right now — is it inbox and admin stuff, chasing leads, or content and marketing?"
-Listen for emotion. "Honestly, all of it" = GREEN FLAG
+YOUR LINE:
+"So — and forgive me if this is a dumb question — I've been talking to a bunch of [their industry] this week, and almost all of them told me the same weird thing… they've got someone on payroll, sometimes a couple people, basically just doing the same repetitive stuff every single day. Like answering the same emails, chasing the same leads, entering the same data into spreadsheets… Is that kind of how it works on your end too, or have you guys figured out a better way?"
 
-Q2 – CURRENT SETUP: "And right now, are you handling that yourself, or do you have a VA, an agency, or some tools doing it?"
-This tells you budget reality. Has a VA = perfect upgrade target
+CRITICAL: Then shut up. Do not fill the silence. Whatever they say next is your roadmap for the entire rest of the call.
 
-Q3 – THE MONEY QUESTION: "If a system handled even 70% of that for you — running on its own, no hand-holding — would that be a 'nice to have' for you, or a 'thank god' moment?"
-"Thank god" or laugh = QUALIFIED → Move to pitch`,
+INDUSTRY-SPECIFIC SWAPS — replace [their industry] with:
+• Agencies: "agency owners"
+• E-commerce: "e-comm folks running Shopify stores"
+• Real estate: "realtors and brokers"
+• Coaching/consulting: "coaches and consultants"
+• Default: "small business owners in your space"`,
   },
   {
-    title: '🎤 THE PITCH — Only if qualified (30s)',
-    content: `"Okay, based on what you just told me — you're exactly who I built this for. Let me tell you what it actually is in 30 seconds, then I'll stop talking."
+    title: '03 — The Probing Questions',
+    content: `Use these to dig deeper based on their answer. Stay in the "I'm just trying to understand" energy — never sound like a salesperson connecting dots. Pick the one that fits what they just said.
 
-"It's called the AI Admin & Marketing Agent. One system, two jobs. On the admin side: it triages your inbox, drafts your replies in your voice, respond to customer inquiries, and books calls straight to your calendar. On the marketing side: it generates content, schedules your posts, and tracks what's actually getting engagement so you stop guessing."
+PROBE 01 — TIME:
+"Huh — okay, that's interesting. So like… how many hours a week would you say you or your team spend on that stuff? Just ballpark."
 
-"Three things people are usually surprised by:"
-1. One-time build around $2,000 to $2,500. You own it. No fuss about sick days, holidays and day offs. Compared to a roughly $58,000/yr hire for the admin piece alone, most break even before month two.
-2. You don't need to be technical. I build it to run in the background. Anyone can use it.
-3. I only take 4 builds a month, and I've got 3 slots left this month.
+PROBE 02 — COST:
+"Wait, hold on — so you're paying someone basically full-time just to do that? I'm not judging, I just genuinely want to understand how that works financially for you."
 
-"The way I figure out if it's a real fit is a 30-minute Zoom — I show you a live demo of one already running, you ask whatever you want, and you decide. No pressure pitch at the end."`,
+PROBE 03 — LEAKAGE:
+"And the lead follow-up side — does anything ever slip through? Like leads that just… never get a response because everyone's busy?"
+
+PROBE 04 — THE KILL SHOT:
+"Okay so I'm trying to picture this — if that whole process just ran itself in the background, like 24/7, no sick days, no Mondays… what would that actually change for you?"
+
+WHY PROBE 04 IS THE KILL SHOT: This question makes them describe their dream outcome in their own words. They're now selling themselves on the value before you've named a single price.`,
   },
   {
-    title: '📅 SOFT CLOSE → BOOK',
-    content: `"Two ways we can do this — I can text or email you my Calendly link and you pick a slot, or I can read you a couple of times right now and we lock it in. Which is easier for you?"
+    title: '04 — The Pivot',
+    content: `Once they've described their pain, drop the confused act. Shift tone — slightly faster, slightly more confident. Stop being a curious stranger and become a specific solution.
 
-📌 Giving a choice between two yeses is more effective than "want to book?"
+YOUR LINE — THE REVEAL:
+"Okay — so the reason I'm asking all this is because that's literally what I build. I'm AJ, I run a small operation out of the Philippines, and what I do is build one-time AI systems that handle exactly what you just described — lead follow-up, inbox triage, the repetitive admin stuff — and you pay for it once. Not monthly. Once. And it just runs.
 
-IF LINK: "Done. What's the best email? — Great, sending it now from aj.virtualsolutionsph@gmail.com. Quick favor: book within 48 hours if you can, slots go fast. And [Name] — if it's not a fit after the demo, just tell me. I'd rather hear no than chase a maybe."
+The reason I'm calling instead of emailing is I only take on 3 to 4 builds a month, so I actually have to talk to people to know if it's a fit. Can I ask you maybe two more questions to see if it even makes sense for me to send you anything?"
 
-IF TIMES: "Cool — I've got [Day] at [Time] or [Day] at [Time], both your timezone. Which works?" → Confirm → "Perfect. Calendar invite coming now."`,
+WHY THIS WORKS:
+"Two more questions" sounds tiny — almost free. "See if it even makes sense" sounds like you're qualifying them. The scarcity ("3 to 4 builds a month") is delivered as a casual fact, not a sales tactic.`,
   },
   {
-    title: '🟡 OBJECTIONS',
-    content: `"I'm too small"
-→ "Honestly that's backwards. Big companies have teams to absorb busywork. You're the one doing all of it personally — which means you're the one who gets the most hours back."
+    title: '05 — The Qualify & Book',
+    content: `Two questions. If both come back green, you book. The goal of a cold call is a booked demo, not a closed deal.
 
-"Can't afford $2K"
-→ "Payment's 50/50, so $1K upfront. But if cash flow's the concern, the lead-gen piece usually pays for the build. Want me to walk you through that on the demo?"
+QUALIFYING QUESTION 01 — DESIRE:
+"First one — if I could take [the specific pain they mentioned] and basically delete it from your week, is that something you'd actually want to see in action, or is it not really a priority right now?"
 
-"Already use ChatGPT"
-→ "Good — means you get the idea. The difference is you're prompting every time. What I build prompts itself. It reads, decides, drafts, and acts — without you opening anything."
+QUALIFYING QUESTION 02 — AUTHORITY:
+"Second — and this is the honest one — when something like this comes up, are you the person who'd make the call on it, or would you need to loop someone else in?"
 
-"Have a VA already"
-→ "Perfect actually — your VA isn't going anywhere. The system handles repetitive stuff so your VA does thinking work. Most clients keep their VA and run the AI together."
+IF BOTH GREEN — THE CLOSE:
+"Cool — here's what I'll do. I'll send you a calendar link, you pick any 30-minute slot this week that works, and I'll do a live screen-share showing you exactly what I'd build for [their use case]. No slides, no pitch deck — just the actual thing running. What's the best email to send the link to?"
 
-"Send me email"
-→ "Will do. Quick thing — based on what you said about [reference Q1 answer], should I send Admin, Marketing, or both? Sending within the hour with Calendly link." THEN ACTUALLY DO IT.`,
+WHY THIS CLOSE LANDS: You're not asking for a yes — you're asking for an email. "No slides, no pitch deck" preemptively kills the fear of a sales meeting.`,
   },
   {
-    title: '📋 PRE-CALL 60-SECOND CHECKLIST',
-    content: `☐ Look at their website/social for 30 seconds — find ONE thing to reference
-☐ Pull up Calendly link in a tab, ready to paste
-☐ Have a notes doc open — capture Q1/Q2 answers for follow-up
-☐ Stand up and SMILE before you dial — it changes your voice`,
+    title: '06 — Objection Counters',
+    content: `Use these verbatim until they're muscle memory, then adapt to your voice.
+
+✕ "I'm not interested."
+→ "Yeah totally fair — and honestly most people say that in the first ten seconds because they assume I'm selling them software or something. I'm not. Can I ask one question and if the answer's no, I'll get off the phone — does your team spend more than like 5 hours a week on repetitive manual tasks?"
+
+✕ "We already have a VA / someone who does this."
+→ "Oh nice, that's actually great — most of my best clients had a VA first. Quick question though — what happens to all that work when your VA takes a day off, or when they eventually leave? That's actually the gap I fill. Worth a 30-minute look?"
+
+✕ "Send me an email with info."
+→ "Yeah I can definitely do that — but real talk, I've sent like a hundred of those and people skim them and forget. What's actually useful is if I just show you a 5-minute demo of what I built for someone in your space. Worst case you steal the idea and build it yourself. What's a bad time for you this week so I can avoid it?"
+
+✕ "How much does it cost?"
+→ "Honest answer — between $2,000 and $2,500 one time, depending on what we're automating. But I genuinely can't tell you if it's worth that until I see what you're dealing with. Most of my clients were paying that much per month to a hire doing the same thing. Want to do a quick demo?"
+
+✕ "We don't have budget right now."
+→ "Got it — and I'm not trying to push you. But just so I understand — is it that the budget isn't there at all, or is it that you haven't seen anything yet that's clearly worth the spend? Because those are two different conversations."
+
+✕ "I need to think about it."
+→ "Totally — what specifically? Is it the price, the timing, or you're not sure it'll actually work for your setup? Because I can probably answer whichever one in like 30 seconds."
+
+✕ "How did you get my number?"
+→ "Honestly? I do my own prospecting. I look up businesses I think I can actually help and I call them myself. If now's a bad time I'll get out of your hair, but I promise I'm not a robocall."`,
   },
   {
-    title: '🎯 DAILY TARGETS',
-    content: `Dials per day:            20–30
-Actual conversations:     5–8
-Qualified prospects:      2–3
-Demos booked (good day):  1`,
-  },
-  {
-    title: '⚡ QUICK PERSONALIZATION TIPS',
-    content: `Swap these in instead of the generic opener:
+    title: '07 — Delivery Notes',
+    content: `Read this before every block of calls until it's internalized.
 
-For agencies: "I build AI systems that handle the prospecting and follow-ups your account managers hate doing."
-For e-commerce: "I build AI systems that replace the customer service and order admin work eating your team's afternoons."
-For coaches/consultants: "I build AI systems that handle inbox triage and discovery-call scheduling so you stop being your own assistant."
+01 — The confused man only works if you sound genuinely curious
+If it sounds rehearsed, it dies. Practice until it feels like you're actually unsure. Slow your pace by about 15%. Add small disfluencies — "um," "like," "hold on" — they're trust signals, not weaknesses.
 
-Remember: You're not selling. You're qualifying. If they don't have the pain, move on.`,
+02 — Never sell the build — sell the deletion of the pain
+They don't want n8n workflows or Claude integrations. They want their Tuesday afternoons back. Every time you're tempted to explain how something works, ask: "Am I describing the outcome, or the mechanism?" Stick to outcomes.
+
+03 — Drop scarcity at the END, not the opener
+The "3 client slots open this month" line is a great closing nudge — but in the opener it sounds like pressure. At the end of a qualified call it sounds like a reason to pick a time this week instead of next.
+
+04 — Track which opener variant gets you past the first 20 seconds
+After 30–40 calls you'll know which industry/pain combo lands hardest. Double down there. Cold calling is a data game wearing a conversation costume.
+
+05 — Silence is your most powerful tool
+After Section 02's pitch, after the kill-shot probe in Section 03, and after the price reveal — say nothing. Most reps lose deals by talking through the prospect's internal processing.
+
+06 — The goal of the call is a booked demo, not a closed deal
+Don't try to close on the phone. You sell automation builds — they need to see them running. Your only job on the cold call is to earn 30 minutes of their calendar.`,
   },
 ];
 

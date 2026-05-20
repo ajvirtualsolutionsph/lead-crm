@@ -171,3 +171,8 @@ POST /calls                          — log a completed call to Supabase + Shee
 - Frontend: `LeadsSidebar.jsx` sorts leads list so those with `operating_hours` float to top; green ⏱ icon next to phone number (hover shows hours)
 - Backend: `sortTabByHours()` added to `sheets.js` — reads "Ready for Call" tab, stably reorders rows (with hours first), writes back in-place
 - `syncFromLeadGen()` now always calls `sortTabByHours()` after sync — fixed early-return bug that skipped sort when no new leads were added
+
+## Session 26 — Cold Calling Script Overhaul
+- Replaced all 8 sections of the cold calling script in `NotesPanel.jsx` with the 7-section "Cold Call Playbook" from AJ's PDF (Confused Man technique)
+- New sections: The Opener, The Confused Man Pitch, The Probing Questions, The Pivot, The Qualify & Book, Objection Counters, Delivery Notes
+- Script is per-section editable via localStorage; users can reset any section to the new defaults via the Reset button
