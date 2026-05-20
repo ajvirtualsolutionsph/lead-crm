@@ -166,3 +166,8 @@ POST /calls                          — log a completed call to Supabase + Shee
 - `App.jsx` checks `sessionStorage` on load — renders login or CRM accordingly
 - Option B (backend JWT auth) saved to memory for a future session
 - Added "Log out" button to right side of `StatusBar` — clears `sessionStorage` and returns to login screen
+
+## Session 25 — Operating Hours Priority Sort
+- Frontend: `LeadsSidebar.jsx` sorts leads list so those with `operating_hours` float to top; green ⏱ icon next to phone number (hover shows hours)
+- Backend: `sortTabByHours()` added to `sheets.js` — reads "Ready for Call" tab, stably reorders rows (with hours first), writes back in-place
+- `syncFromLeadGen()` now always calls `sortTabByHours()` after sync — fixed early-return bug that skipped sort when no new leads were added
