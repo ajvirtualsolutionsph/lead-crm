@@ -161,7 +161,7 @@ const inputStyle = {
   fontFamily: 'system-ui, sans-serif',
 };
 
-const STORAGE_KEY = 'crm_script_sections';
+const STORAGE_KEY = 'crm_script_sections_v2';
 
 function loadScript() {
   try {
